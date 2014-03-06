@@ -63,7 +63,7 @@ color_to_rgb(i::Integer) = convert(RGB, RGB24(unsigned(i)))
 color_to_rgb(s::String) = color(s)
 color_to_rgb(rgb::(Real,Real,Real)) = RGB(rgb...)
 color_to_rgb(cv::ColorValue) = convert(RGB, cv)
-color_to_rgb(cv::AlphaColorValue) = cv
+#color_to_rgb(cv::AlphaColorValue) = cv
 
 set_color(ctx::CairoContext, color) = set_source(ctx, color_to_rgb(color))
 
@@ -153,8 +153,8 @@ const symbol_funcs = {
         close_path(c)
     ),
     "dot" => (c, x, y, r) -> (
-        new_sub_path(c);
-        rectangle(c, x, y, 1., 1.)
+        move_to(c,x,y);
+        rel_line_to(c,0,0)
     ),
     "plus" => (c, x, y, r) -> (
         move_to(c, x+r, y);
@@ -195,6 +195,7 @@ const symbol_funcs = {
 function symbols(self::CairoRenderer, x, y)
     fullname = get(self.state, :symbolkind, "circle")
     size = get(self.state, :symbolsize, 0.01)
+    linewidth  = get(self.state, :linewidth, 0.01)
 
     splitname = split(fullname)
     name = pop!(splitname)
@@ -204,16 +205,29 @@ function symbols(self::CairoRenderer, x, y)
     symbol_func = get(symbol_funcs, name, default_symbol_func)
 
     save(self.ctx)
+    if contains(name, "dot")
+        set_line_cap(self.ctx,Cairo.CAIRO_LINE_CAP_ROUND);
+        set_line_width(self.ctx, size)
+    end
     set_dash(self.ctx, Float64[])
     new_path(self.ctx)
     for i = 1:min(length(x),length(y))
         symbol_func(self.ctx, x[i], y[i], size)
+        if (i & 127) == 0
+            if filled
+                fill_preserve(self.ctx)
+           end
+           stroke(self.ctx)
+       end
     end
     if filled
         fill_preserve(self.ctx)
     end
     stroke(self.ctx)
     restore(self.ctx)
+    if contains(name, "dot")
+        set_line_width(self.ctx, linewidth)
+    end
 end
 
 function curve(self::CairoRenderer, x::AbstractVector, y::AbstractVector)
