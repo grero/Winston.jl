@@ -230,7 +230,7 @@ function symbols(self::CairoRenderer, x, y)
     end
 end
 
-function curve(self::CairoRenderer, x::AbstractVector, y::AbstractVector)
+function curve(self::CairoRenderer, x::AbstractArray, y::AbstractArray)
     n = min(length(x), length(y))
     n > 0 || return
     new_path(self.ctx)
