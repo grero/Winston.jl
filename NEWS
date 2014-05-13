@@ -9,3 +9,5 @@ v0.11.0 (2014 Apr 30)
 
 * Improved plot()'s handling of real matrices & complex arrays.
 
+* Added quartileboxes() function and QuartileBoxes component
+
