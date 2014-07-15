@@ -61,14 +61,14 @@ export
     SymmetricErrorBarsX,
     SymmetricErrorBarsY,
 
+    add,
     file,
     getattr,
     setattr,
     style,
     svg
 
-import Base: add,
-    copy,
+import Base: copy,
     display,
     get,
     getindex,
