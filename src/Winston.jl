@@ -83,6 +83,14 @@ if VERSION < v"0.3-"
     typealias AbstractVecOrMat{T} Union(AbstractVector{T}, AbstractMatrix{T})
     extrema(x) = (minimum(x),maximum(x))
     Base.push!(x, a, b) = (push!(x, a); push!(x, b))
+elseif VERSION < v"0.4-"
+    macro Dict(pairs...)
+        Expr(:dict, pairs...)
+    end
+else
+    macro Dict(pairs...)
+        Expr(:call, :Dict, pairs...)
+    end
 end
 
 type WinstonException <: Exception
@@ -242,13 +250,13 @@ type Legend <: PlotComponent
     end
 end
 
-_kw_rename(::Legend) = [
+_kw_rename(::Legend) = @Dict(
     :face      => :fontface,
     :size      => :fontsize,
     :angle     => :textangle,
     :halign    => :texthalign,
     :valign    => :textvalign,
-]
+)
 
 function make(self::Legend, context::PlotContext)
     key_pos = project(context.plot_geom, self.x, self.y)
@@ -283,11 +291,11 @@ end
 
 abstract ErrorBar <: PlotComponent
 
-_kw_rename(::ErrorBar) = [
+_kw_rename(::ErrorBar) = @Dict(
     :color => :linecolor,
     :width => :linewidth,
     :kind => :linekind,
-]
+)
 
 type ErrorBarsX <: ErrorBar
     attr::PlotAttributes
@@ -766,12 +774,12 @@ end
 
 # defaults
 
-_attr_map(::HalfAxis) = [
+_attr_map(::HalfAxis) = @Dict(
     :labeloffset       => :label_offset,
     :major_ticklabels  => :ticklabels,
     :major_ticks       => :ticks,
     :minor_ticks       => :subticks,
-]
+)
 
 function _ticks(self::HalfAxis, context)
     logidx = _log(self, context) ? 2 : 1
@@ -826,7 +834,7 @@ function _make_ticklabels(self::HalfAxis, context, pos, labels)
 
     halign, valign = _align(self)
 
-    style = (Symbol=>Any)[]
+    style = Dict{Symbol,Any}()
     style[:texthalign] = halign
     style[:textvalign] = valign
     for (k,v) in getattr(self, :ticklabels_style)
@@ -1024,7 +1032,9 @@ type FramedPlot <: PlotContainer
             _Alias(x1, x2),
             _Alias(y1, y2),
         )
-        setattr(self.frame, :grid_style, (Symbol=>Any)[:linekind => "dot"])
+        gs = Dict{Symbol,Any}()
+        gs[:linekind] = "dot"
+        setattr(self.frame, :grid_style, gs)
         setattr(self.frame, :tickdir, -1)
         setattr(self.frame1, :draw_grid, false)
         iniattr(self, args...; kvs...)
@@ -1032,7 +1042,7 @@ type FramedPlot <: PlotContainer
     end
 end
 
-_attr_map(fp::FramedPlot) = [
+_attr_map(fp::FramedPlot) = @Dict(
     :xlabel    => (fp.x1, :label),
     :ylabel    => (fp.y1, :label),
     :xlog      => (fp.x1, :log),
@@ -1041,7 +1051,7 @@ _attr_map(fp::FramedPlot) = [
     :yrange    => (fp.y1, :range),
     :xtitle    => (fp.x1, :label),
     :ytitle    => (fp.y1, :label),
-]
+)
 
 function getattr(self::FramedPlot, name::Symbol)
     am = _attr_map(self)
@@ -1906,14 +1916,14 @@ end
 
 abstract LineComponent <: PlotComponent
 
-_kw_rename(::LineComponent) = [
+_kw_rename(::LineComponent) = @Dict(
     :color => :linecolor,
     :kind => :linekind,
     :width => :linewidth,
     # deprecated
     :type => :linekind,
     :linetype => :linekind,
-]
+)
 
 function make_key(self::LineComponent, bbox::BoundingBox)
     y = center(bbox).y
@@ -2257,10 +2267,10 @@ type BoxLabel <: PlotComponent
     end
 end
 
-_kw_rename(::BoxLabel) = [
+_kw_rename(::BoxLabel) = @Dict(
     :face => :fontface,
     :size => :fontsize,
-]
+)
 
 function make(self::BoxLabel, context)
     bb = boundingbox(self.obj, context.paintc)
@@ -2327,13 +2337,13 @@ end
 
 abstract LabelComponent <: PlotComponent
 
-_kw_rename(::LabelComponent) = [
+_kw_rename(::LabelComponent) = @Dict(
     :face      => :fontface,
     :size      => :fontsize,
     :angle     => :textangle,
     :halign    => :texthalign,
     :valign    => :textvalign,
-]
+)
 
 #function limits(self::LabelComponent)
 #    return BoundingBox()
@@ -2433,10 +2443,10 @@ function make_key(self::FillComponent, bbox::BoundingBox)
     return GroupPainter(getattr(self,:style), BoxPainter(p,q))
 end
 
-kw_defaults(::FillComponent) = [
+kw_defaults(::FillComponent) = @Dict(
     :color => config_value("FillComponent","fillcolor"),
     :fillkind => config_value("FillComponent","fillkind"),
-]
+)
 
 type FillAbove <: FillComponent
     attr::PlotAttributes
@@ -2629,13 +2639,13 @@ end
 
 abstract SymbolDataComponent <: PlotComponent
 
-_kw_rename(::SymbolDataComponent) = [
+_kw_rename(::SymbolDataComponent) = @Dict(
     :kind => :symbolkind,
     :size => :symbolsize,
     # deprecated
     :type => :symbolkind,
     :symboltype => :symbolkind,
-]
+)
 
 function make_key(self::SymbolDataComponent, bbox::BoundingBox)
     pos = center(bbox)
@@ -2657,10 +2667,10 @@ type Points <: SymbolDataComponent
     end
 end
 
-kw_defaults(::SymbolDataComponent) = [
+kw_defaults(::SymbolDataComponent) = @Dict(
     :symbolkind => config_value("Points","symbolkind"),
     :symbolsize => config_value("Points","symbolsize"),
-]
+)
 
 limits(self::SymbolDataComponent, window::BoundingBox) =
     bounds_within(self.x, self.y, window)
@@ -2693,10 +2703,10 @@ type ColoredPoints <: SymbolDataComponent
     end
 end
 
-kw_defaults(::ColoredPoints) = [
+kw_defaults(::ColoredPoints) = @Dict(
     :symbolkind => config_value("Points","symbolkind"),
     :symbolsize => config_value("Points","symbolsize"),
-]
+)
 
 limits(self::ColoredPoints, window::BoundingBox) =
     bounds_within(self.x, self.y, window)
@@ -2785,7 +2795,7 @@ end
 # HasStyle ---------------------------------------------------------------
 
 kw_defaults(x) = Dict{Symbol,Any}()
-_kw_rename(x) = (Symbol=>Symbol)[]
+_kw_rename(x) = Dict{Symbol,Symbol}()
 
 function kw_init(self::HasStyle, args...; kvs...)
     # jeez, what a mess...
