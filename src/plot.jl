@@ -263,7 +263,8 @@ function data2rgb{T<:Real}(data::AbstractArray{T}, limits::Interval, colormap::A
             idx = clamp(idx, 1, ncolors)
             img[i] = colormap[idx]
         else
-            img[i] = 0x00000000
+            #img[i] = 0x00000000
+            img[i] = 0xffffffff
         end
     end
     img
@@ -293,6 +294,10 @@ colormap("jet")
 
 function imagesc{T<:Real}(xrange::Interval, yrange::Interval, data::AbstractArray{T,2}, clims::Interval)
     p = ghf()
+    imagesc(p,xrange,yrange,data,clims)
+end
+    
+function imagesc{T<:Real}(p::PlotContainer,xrange::Interval, yrange::Interval, data::AbstractArray{T,2}, clims::Interval)
     if !_hold
         setattr(p, :xrange, xrange)
         setattr(p, :yrange, reverse(yrange))
@@ -304,9 +309,10 @@ function imagesc{T<:Real}(xrange::Interval, yrange::Interval, data::AbstractArra
     ghf(p)
 end
 
-imagesc(xrange, yrange, data) = imagesc(xrange, yrange, data, (minimum(data),maximum(data)+1))
-imagesc(data) = ((h, w) = size(data); imagesc((0,w), (0,h), data))
-imagesc{T}(data::AbstractArray{T,2}, clims::Interval) = ((h, w) = size(data); imagesc((0,w), (0,h), data, clims))
+imagesc(p,xrange, yrange, data) = imagesc(p,xrange, yrange, data, (minimum(data),maximum(data)+1))
+imagesc(p,data) = ((h, w) = size(data); imagesc(p,(0,w), (0,h), data))
+imagesc(data) = ((h, w) = size(data); imagesc(ghf(),(0,w), (0,h), data))
+imagesc{T}(p,data::AbstractArray{T,2}, clims::Interval) = ((h, w) = size(data); imagesc(p,(0,w), (0,h), data, clims))
 
 function spy(S::SparseMatrixCSC, nrS::Integer, ncS::Integer)
     m, n = size(S)
