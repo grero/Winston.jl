@@ -49,37 +49,36 @@ for (f,k) in ((:xlim,:xrange),(:ylim,:yrange))
     @eval $f() = $k(limits(_pwinston))
 end
 
-const chartokens = Dict([
-    ('-',(:linekind, "solid")),
-    (':', (:linekind, "dotted")),
-    (';', (:linekind, "dotdashed")),
-    ('+', (:symbolkind, "plus")),
-    ('o', (:symbolkind, "circle")),
-    ('*', (:symbolkind, "asterisk")),
-    ('.', (:symbolkind, "dot")),
-    ('x', (:symbolkind, "cross")),
-    ('s', (:symbolkind, "square")),
-    ('d', (:symbolkind, "diamond")),
-    ('^', (:symbolkind, "triangle")),
-    ('v', (:symbolkind, "down-triangle")),
-    ('>', (:symbolkind, "right-triangle")),
-    ('<', (:symbolkind, "left-triangle")),
-    ('|', (:symbolkind,"vline")),
-    ('y', (:color, colorant"yellow")),
-    ('m', (:color, colorant"magenta")),
-    ('c', (:color, colorant"cyan")),
-    ('r', (:color, colorant"red")),
-    ('g', (:color, colorant"green")),
-    ('b', (:color, colorant"blue")),
-    ('w', (:color, colorant"white")),
-    ('k', (:color, colorant"black")),
-])
+const chartokens = @Dict(
+    '-' => (:linekind, "solid"),
+    ':' => (:linekind, "dotted"),
+    ';' => (:linekind, "dotdashed"),
+    '+' => (:symbolkind, "plus"),
+    'o' => (:symbolkind, "circle"),
+    '*' => (:symbolkind, "asterisk"),
+    '.' => (:symbolkind, "dot"),
+    'x' => (:symbolkind, "cross"),
+    's' => (:symbolkind, "square"),
+    'd' => (:symbolkind, "diamond"),
+    '^' => (:symbolkind, "triangle"),
+    'v' => (:symbolkind, "down-triangle"),
+    '>' => (:symbolkind, "right-triangle"),
+    '<' => (:symbolkind, "left-triangle"),
+    'y' => (:color, "yellow"),
+    'm' => (:color, "magenta"),
+    'c' => (:color, "cyan"),
+    'r' => (:color, "red"),
+    'g' => (:color, "green"),
+    'b' => (:color, "blue"),
+    'w' => (:color, "white"),
+    'k' => (:color, "black"),
+)
 
-@compat function _parse_spec(spec::AbstractString)
+function _parse_spec(spec::String)
     style = Dict()
 
     try
-        style[:color] = parse(Colors.Colorant, spec)
+        style[:color] = Colors.color(spec)
         return style
     end
 
