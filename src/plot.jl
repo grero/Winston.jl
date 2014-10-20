@@ -1,3 +1,29 @@
+export bar,
+       colormap,
+       errorbar,
+       file,
+       fplot,
+       hold,
+       imagesc,
+       loglog,
+       oplot,
+       plot,
+       plothist,
+       plothist2d,
+       quartileboxes,
+       savefig,
+       scatter,
+       semilogx,
+       semilogy,
+       spy,
+       text,
+       title,
+       xlabel,
+       xlim,
+       ylabel,
+       ylim
+
+_pwinston = FramedPlot()
 
 _hold = false
 hold() = (global _hold = !_hold)
@@ -434,6 +460,7 @@ end
 plothist(p::FramedPlot, args...; kvs...) = plothist(p::FramedPlot, hist(args...); kvs...)
 plothist(args...; kvs...) = plothist(ghf(), args...; kvs...)
 
+<<<<<<< HEAD
 quartileboxes(args...; kvs...) = quartileboxes(ghf(), args...; kvs...)
 
 function quartileboxes(p::FramedPlot, h::Matrix;kvs...)
@@ -470,27 +497,9 @@ function quartileboxes(p::FramedPlot, b::QuartileBoxes;kvs...)
             setattr(p, k, v)
         end
     end
-
     global _pwinston = p
     p
 end
-
-function bar(p::FramedPlot, edges::Vector, heights::Vector, widths::Vector;kvs...)
-	b = Bars(edges,heights,widths)
-	add(p,b)
-    for (k,v) in kvs
-        if k in [:color,:linecolor,:linekind,:linetype,:linewidth]
-            style(b, k, v)
-        else
-            setattr(p, k, v)
-        end
-    end
-    global _pwinston = p
-	p
-end
-bar(edges::Vector, heights::Vector;kvs...) = bar(edges, heights, 0.8*ones(length(edges));kvs...)
-bar(edges::Vector, heights::Vector, widths::Vector;kvs...) = bar(ghf(), edges, heights, widths;kvs...)
-
 
 # 3x3 gaussian
 #_default_kernel2d=[.05 .1 .05; .1 .4 .1; .05 .1 .05]
