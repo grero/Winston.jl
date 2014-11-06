@@ -460,7 +460,6 @@ end
 plothist(p::FramedPlot, args...; kvs...) = plothist(p::FramedPlot, hist(args...); kvs...)
 plothist(args...; kvs...) = plothist(ghf(), args...; kvs...)
 
-<<<<<<< HEAD
 quartileboxes(args...; kvs...) = quartileboxes(ghf(), args...; kvs...)
 
 function quartileboxes(p::FramedPlot, h::Matrix;kvs...)
