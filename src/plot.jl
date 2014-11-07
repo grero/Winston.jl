@@ -477,11 +477,15 @@ function quartileboxes{T<:Real}(p::FramedPlot, h::Array{T,1}...;kvs...)
 end
 
 function quartileboxes(p::FramedPlot, h::Matrix;kvs...)
+	positions = zeros(length(h))
     for i=1:size(h,2)
         b = QuartileBoxes(h[:,i];kvs...)
         b.position = 1.1*b.width*i
         quartileboxes(p,b;kvs...)
+		positions[i] = b.position
     end
+	setattr(p.x, "ticks", positions)
+	setattr(p.x1, "ticklabels",[1:length(h)])
     p
 end
 
