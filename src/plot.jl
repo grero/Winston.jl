@@ -462,6 +462,20 @@ plothist(args...; kvs...) = plothist(ghf(), args...; kvs...)
 
 quartileboxes(args...; kvs...) = quartileboxes(ghf(), args...; kvs...)
 
+function quartileboxes{T<:Real}(p::FramedPlot, h::Array{T,1}...;kvs...)
+	positions = zeros(length(h))
+	for i=1:length(h)
+        b = QuartileBoxes(h[i];kvs...)
+        #b.position = 1.1*b.width*i
+		b.position = i
+        quartileboxes(p,b;kvs...)
+		positions[i] = b.position
+	end
+	setattr(p.x, "ticks", positions)
+	setattr(p.x1, "ticklabels",map(string,[1:length(h)]))
+	p
+end
+
 function quartileboxes(p::FramedPlot, h::Matrix;kvs...)
     for i=1:size(h,2)
         b = QuartileBoxes(h[:,i];kvs...)
