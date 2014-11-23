@@ -2127,6 +2127,7 @@ type QuartileBoxes <: PlotComponent
     n::Int64
     position::Float64
 	whiskers::(Float64,Float64)
+	draw_outliers::Bool
 
 
     function QuartileBoxes(median, quartiles, whiskers, outliers, n,args...; kvs...)
@@ -2142,6 +2143,7 @@ type QuartileBoxes <: PlotComponent
         self.width=0.8
         self.position = 1.0
         self.n = n 
+		self.draw_outliers = true
         self
     end
 end
@@ -2161,7 +2163,7 @@ function QuartileBoxes(X::Vector;kvs...)
 end
 
 function limits(self::QuartileBoxes, window::BoundingBox)
-    if !isempty(self.outliers)
+    if !isempty(self.outliers) && self.draw_outliers
         ymin = min(self.quartiles[1]-1.5*self.iqr,minimum(self.outliers))
         ymax = max(self.quartiles[2]+1.5*self.iqr,maximum(self.outliers))
     else
