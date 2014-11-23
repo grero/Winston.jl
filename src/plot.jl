@@ -471,6 +471,7 @@ function quartileboxes{T<:Real}(p::FramedPlot, h::Array{T,1}...;kvs...)
         quartileboxes(p,b;kvs...)
 		positions[i] = b.position
 	end
+	setattr(p.x, "draw_subticks", false)
 	setattr(p.x, "ticks", positions)
 	setattr(p.x1, "ticklabels",map(string,[1:length(h)]))
 	p
@@ -484,6 +485,7 @@ function quartileboxes(p::FramedPlot, h::Matrix;kvs...)
         quartileboxes(p,b;kvs...)
 		positions[i] = b.position
     end
+	setattr(p.x, "draw_subticks", false)
 	setattr(p.x, "ticks", positions)
 	setattr(p.x1, "ticklabels",[1:length(h)])
     p
@@ -492,6 +494,8 @@ end
 function quartileboxes(p::FramedPlot, h::Vector;kvs...)
     b = QuartileBoxes(h;kvs...)
     quartileboxes(p,b;kvs...)
+	setattr(p.x, "draw_subticks", false)
+	setattr(p.x, "ticks", [b.position])
 end
 
 function quartileboxes(p::FramedPlot, h::(Float64,(Float64,Float64),Vector);kvs...)
