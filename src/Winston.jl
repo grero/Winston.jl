@@ -8,6 +8,7 @@ else
     importall Graphics
 end
 using IniFile
+<<<<<<< 2330bb53d2787fc2144b04a3cceabf44f493e841
 using Compat
 using Dates
 
@@ -67,6 +68,7 @@ export
     PlotInset,
     PlotLabel,
     Points,
+    SignificanceLine,
     Slope,
     Stems,
     SymmetricErrorBarsX,
@@ -2403,6 +2405,52 @@ function make(self::Stems, context::PlotContext)
     end
     gp
 end
+
+type SignificanceLines <: LineComponent
+	attr::PlotAttributes
+	x1
+	x2
+	y1 
+	y2
+	pvalue
+
+	function SignificanceLines(x1,x2, y1, y2, pvalue, args...; kvs...)
+		self = new(Dict())
+		iniattr(self)
+		kw_init(self, args...; kvs...)
+		self.x1 = x1
+		self.x2 = x2
+		self.y1 = y1
+		self.y2 = y2
+		self.pvalue = pvalue
+		self
+	end
+end
+
+function limits(self::SignificanceLines, window::BoundingBox)
+    return bounds_within(self.x1, self.y1, window) +
+           bounds_within(self.x2, self.y2, window)
+end
+
+function make(self::SignificanceLines, context::PlotContext)
+	gp = GroupPainter(getattr(self, :style))
+	p1 = project(context.geom, Point(self.x1, self.y1))
+	p2 = project(context.geom, Point(self.x2, self.y2))
+	textpos = project(context.geom, Point(self.x1 + (self.x2-self.x1)/2, self.y1+0.1))
+	push!(gp, LinePainter(p1,p2))
+	if self.pvalue <= 0.001
+		t1 =  TextPainter(textpos, "***"; halign="center")
+		push!(gp, t1)
+	elseif self.pvalue <= 0.01
+		t1 =  TextPainter(textpos, "**"; halign="center")
+		push!(gp, t1)
+	elseif self.pvalue <= 0.05
+		t1 =  TextPainter(textpos, "*"; halign="center")
+		push!(gp, t1)
+	end
+	gp
+end
+
 
 # LabelComponent --------------------------------------------------------------
 
