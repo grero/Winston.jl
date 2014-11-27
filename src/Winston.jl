@@ -2130,7 +2130,7 @@ type QuartileBoxes <: PlotComponent
 	draw_outliers::Bool
 
 
-    function QuartileBoxes(median, quartiles, whiskers, outliers, n,args...; kvs...)
+    function QuartileBoxes(median, quartiles, whiskers, outliers, n, args...; draw_outliers = true,kvs...)
         self = new(Dict())
         iniattr(self)
         kw_init(self, args...; kvs...)
@@ -2143,7 +2143,7 @@ type QuartileBoxes <: PlotComponent
         self.width=0.8
         self.position = 1.0
         self.n = n 
-		self.draw_outliers = true
+		self.draw_outliers = draw_outliers
         self
     end
 end
@@ -2159,7 +2159,7 @@ function QuartileBoxes(X::Vector;kvs...)
 	wu = !isempty(_wu) ? maximum(_wu) : NaN
 	_wl = X[(X.>l-1.5*iqr)&(X.<l)]
 	wl = !isempty(_wl) ? minimum(_wl) : NaN
-    QuartileBoxes(m,(l,h),(wl,wu),X[(X.>h+1.5*iqr)|(X.<l-1.5*iqr)],length(X);kvs...)
+    QuartileBoxes(m,(l,h),(wl,wu),X[(X.>wu)|(X.<wl)],length(X);kvs...)
 end
 
 function limits(self::QuartileBoxes, window::BoundingBox)
@@ -2272,10 +2272,12 @@ function make(self::QuartileBoxes, context::PlotContext)
 		push!(objs,l8)
 	end
     #outliers
-    for o in self.outliers
-        p = project(context.geom, xm, o)
-        push!(objs, SymbolPainter(Point(p[1],p[2])))
-    end
+	if self.draw_outliers
+		for o in self.outliers
+			p = project(context.geom, xm, o)
+			push!(objs, SymbolPainter(Point(p[1],p[2])))
+		end
+	end
     objs
 end
 
