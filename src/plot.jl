@@ -682,6 +682,7 @@ function fplot(f::Function, limits, args...; kvs...)
     plot(x, y, pargs...; kvs...)
 end
 
+<<<<<<< HEAD
 # bar, barh
 ax = @compat Dict{Any,Any}(:bar => :x, :barh => :y)
 ax1 = @compat Dict{Any,Any}(:bar => :x1, :barh => :y1)
