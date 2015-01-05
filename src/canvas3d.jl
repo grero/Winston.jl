@@ -255,6 +255,7 @@ function draw(gc, c::Canvas3D, this::Polygons3D)
             stroke(gc)
         end
     end
+	Tk.update()
 end
 
 function surf(xf::Function, yf::Function, zf::Function, ur, vr; coloring=false)
