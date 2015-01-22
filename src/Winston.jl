@@ -16,8 +16,8 @@ isdefined(Base, :Libc) && (strftime = Libc.strftime)
 isdefined(Base, :Dates) && (datetime2unix = Dates.datetime2unix)
 
 export
-	bar,
-    barh,
+		bar,
+		barh,
     closefig,
     closeall,
     colormap,
@@ -56,7 +56,7 @@ export
     QuartileBoxes,
 		RectangularPatch,
     RectangularBorder,
-		Bars,
+		RectangularBorder,
     Curve,
     FillAbove,
     FillBelow,
@@ -2852,7 +2852,6 @@ function make(self::Image, context)
 end
 
 # FramedComponent ---------------------------------------------------------------
-
 abstract FramedComponent <: PlotComponent
     
 function make_key(self::FramedComponent, bbox::BoundingBox)
@@ -2887,8 +2886,8 @@ _kw_rename(::FramedBar) = @Dict(
 
 function limits(self::FramedBar, window::BoundingBox)
     x = [1, length(self.g)] + 
-        getattr(self, "barwidth") * [-.5, .5] +
-        getattr(self, "offset")
+		getattr(self, "barwidth") * [-.5, .5] +
+		getattr(self, "offset")
     y = [extrema(self.h)...]
     !getattr(self, "vertical") && ((x, y) = (y, x))
     bounds_within(x, y, window)
