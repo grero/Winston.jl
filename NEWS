@@ -1,0 +1,9 @@
+v0.11.0 (2014 Apr XX)
+=====================
+
+* Added figure(), gcf(), & closefig() functions for managing multiple windows.
+
+* Added stem() function and Stems component.
+
+* Added quartileboxes() function and QuartileBoxes component
+

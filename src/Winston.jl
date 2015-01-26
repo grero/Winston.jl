@@ -5,42 +5,73 @@ using Color
 importall Base.Graphics
 using IniFile
 
-export #FramedArray,
-       FramedPlot,
-       Plot,
-       Table,
+export
+    closefig,
+    colormap,
+    errorbar,
+    figure,
+    fplot,
+    gcf,
+    hold,
+    imagesc,
+    loglog,
+    oplot,
+    plot,
+    plothist,
+    plothist2d,
+    quartileboxes,
+    savefig,
+    scatter,
+    semilogx,
+    semilogy,
+    spy,
+    stem,
+    text,
+    title,
+    xlabel,
+    xlim,
+    ylabel,
+    ylim
 
-       Curve,
-       FillAbove,
-       FillBelow,
-       FillBetween,
-       Histogram,
-       Image,
-       Legend,
-       LineX,
-       LineY,
-       PlotInset,
-       PlotLabel,
-       Points,
-       Slope,
-       SymmetricErrorBarsX,
-       SymmetricErrorBarsY,
+export
+    # FramedArray
+    FramedPlot,
+    Plot,
+    Table,
+    
+    QuartileBoxes,
+    Curve,
+    FillAbove,
+    FillBelow,
+    FillBetween,
+    Histogram,
+    Image,
+    Legend,
+    LineX,
+    LineY,
+    PlotInset,
+    PlotLabel,
+    Points,
+    Slope,
+    Stems,
+    SymmetricErrorBarsX,
+    SymmetricErrorBarsY,
 
-       file,
-       getattr,
-       setattr,
-       style,
-       svg
+    file,
+    getattr,
+    setattr,
+    style,
+    svg
 
 import Base: add,
-             copy,
-             display,
-             get,
-             getindex,
-             isempty,
-             setindex!,
-             show,
-             writemime
+    copy,
+    display,
+    get,
+    getindex,
+    isempty,
+    setindex!,
+    show,
+    writemime
 
 export get_context, device_to_data, data_to_device
 
@@ -1133,6 +1164,9 @@ function limits2(fp::FramedPlot)
         return limits(margin, xrange, yrange, xlog, ylog, fp.content2)
     end
 
+    xrange === nothing && (xrange = getattr(fp.x1,:range))
+    yrange === nothing && (yrange = getattr(fp.y1,:range))
+
     rect = limits(fp)
     computed_bbox = BoundingBox(rect)
 
@@ -2001,6 +2035,155 @@ function make(self::Histogram, context::PlotContext)
     GroupPainter(getattr(self,:style), PathPainter(u, v))
 end
 
+type QuartileBoxes <: PlotComponent
+    attr::PlotAttributes
+    median::Float64
+    quartiles::(Float64,Float64)
+    iqr::Float64
+    outliers::AbstractVector
+    notch::Bool
+    width::Float64
+    n::Int64
+    position::Float64
+
+
+    function QuartileBoxes(median, quartiles, outliers, n,args...; kvs...)
+        self = new(Dict())
+        iniattr(self)
+        kw_init(self, args...; kvs...)
+        self.median = median
+        self.quartiles = quartiles
+        self.iqr = quartiles[2] - quartiles[1]
+        self.outliers = filter(x-> (x<quartiles[1]-1.5*self.iqr)|(x>quartiles[2]+1.5*self.iqr),outliers)
+        self.notch = get(args2dict(kvs...), :notch, false)
+        self.width=1.0
+        self.position = 1.0
+        self.n = n 
+        self
+    end
+end
+
+function QuartileBoxes(X::Vector;kvs...)
+    #compute median and quartiles directly
+    Xs = sort(X)
+    m = median(X)
+    l = quantile(X,0.25)
+    h = quantile(X,0.75)
+    iqr = h-l
+    QuartileBoxes(m,(l,h),X[(X.>h+1.5*iqr)|(X.<l-1.5*iqr)],length(X);kvs...)
+end
+
+function limits(self::QuartileBoxes, window::BoundingBox)
+    if !isempty(self.outliers)
+        ymin = min(self.quartiles[1]-1.5*self.iqr,minimum(self.outliers))
+        ymax = max(self.quartiles[2]+1.5*self.iqr,maximum(self.outliers))
+    else
+        ymin = self.quartiles[1]-1.5*self.iqr
+        ymax = self.quartiles[2]+1.5*self.iqr
+    end
+    xl = self.position - 1.0*self.width
+    xr = self.position + 1.0*self.width
+    bounds_within([xl,xl,xr,xr],[ymin,ymax, ymin, ymax],  window)
+end
+
+function make(self::QuartileBoxes, context::PlotContext)
+    objs = GroupPainter(getattr(self,:style))
+    xl = self.position - 0.5*self.width
+    xr = self.position + 0.5*self.width
+    xm = self.position
+
+    #draw notch
+    if self.notch 
+        xln = self.position - 0.25*self.width
+        xrn = self.position + 0.25*self.width
+        ymin = self.median-1.58*self.iqr/sqrt(self.n)
+        ymax = self.median+1.58*self.iqr/sqrt(self.n)
+        #top notch
+        p = project(context.geom, xln, self.median)
+        q = project(context.geom, xl, ymax)
+        push!(objs,LinePainter(Point(p[1],p[2]), Point(q[1],q[2])))
+        p = project(context.geom, xrn, self.median)
+        q = project(context.geom, xr, ymax)
+        push!(objs,LinePainter(Point(p[1],p[2]), Point(q[1],q[2])))
+        #bottom notch
+        p = project(context.geom, xln, self.median)
+        q = project(context.geom, xl, ymin)
+        push!(objs,LinePainter(Point(p[1],p[2]), Point(q[1],q[2])))
+        p = project(context.geom, xrn, self.median)
+        q = project(context.geom, xr, ymin)
+        push!(objs,LinePainter(Point(p[1],p[2]), Point(q[1],q[2])))
+        #median
+        p = project(context.geom, xrn, self.median)
+        q = project(context.geom, xln, self.median)
+        push!(objs,LinePainter(Point(p[1],p[2]), Point(q[1],q[2])))
+        
+        #change the starting points for the quartile boxes
+        qtop = ymax 
+        qbottom = ymin
+    else
+        #median
+        p = project(context.geom, xl, self.median)
+        q = project(context.geom, xr, self.median)
+        m = LinePainter(Point(p[1],p[2]), Point(q[1],q[2]))
+        push!(objs,m)
+        qtop = self.median
+        qbottom = self.median
+    end
+
+    #quartiles
+    #horizontal lines
+    p = project(context.geom, xl, self.quartiles[1])
+    q = project(context.geom, xr, self.quartiles[1])
+    l1 = LinePainter(Point(p[1],p[2]), Point(q[1],q[2]))
+    push!(objs,l1)
+    p = project(context.geom, xl, self.quartiles[2])
+    q = project(context.geom, xr, self.quartiles[2])
+    l2 = LinePainter(Point(p[1],p[2]), Point(q[1],q[2]))
+    push!(objs,l2)
+    
+    #vertical lines
+    p = project(context.geom, xl, qtop)
+    q = project(context.geom, xl, self.quartiles[2])
+    push!(objs,LinePainter(Point(p[1],p[2]), Point(q[1],q[2])))
+    p = project(context.geom, xl, qbottom)
+    q = project(context.geom, xl, self.quartiles[1])
+    push!(objs,LinePainter(Point(p[1],p[2]), Point(q[1],q[2])))
+
+    p = project(context.geom, xr, qtop)
+    q = project(context.geom, xr, self.quartiles[2])
+    push!(objs,LinePainter(Point(p[1],p[2]), Point(q[1],q[2])))
+    p = project(context.geom, xr, qbottom)
+    q = project(context.geom, xr, self.quartiles[1])
+    push!(objs,LinePainter(Point(p[1],p[2]), Point(q[1],q[2])))
+
+    #draw the whiskers
+    xlm = xm - 0.25*self.width
+    xrm = xm + 0.25*self.width
+    p = project(context.geom, xm, self.quartiles[1])
+    q = project(context.geom, xm, self.quartiles[1]-1.5*self.iqr)
+    l5 = LinePainter(Point(p[1],p[2]), Point(q[1],q[2]))
+    push!(objs,l5)
+    p = project(context.geom, xlm, self.quartiles[1]-1.5*self.iqr)
+    q = project(context.geom, xrm, self.quartiles[1]-1.5*self.iqr)
+    l6 = LinePainter(Point(p[1],p[2]), Point(q[1],q[2]))
+    push!(objs,l6)
+
+    p = project(context.geom, xm, self.quartiles[2])
+    q = project(context.geom, xm, self.quartiles[2]+1.5*self.iqr)
+    l7 = LinePainter(Point(p[1],p[2]), Point(q[1],q[2]))
+    push!(objs,l7)
+    p = project(context.geom, xlm, self.quartiles[2]+1.5*self.iqr)
+    q = project(context.geom, xrm, self.quartiles[2]+1.5*self.iqr)
+    l8 = LinePainter(Point(p[1],p[2]), Point(q[1],q[2]))
+    push!(objs,l8)
+    #outliers
+    for o in self.outliers
+        p = project(context.geom, xm, o)
+        push!(objs, SymbolPainter(Point(p[1],p[2])))
+    end
+    objs
+end
+
 type LineX <: LineComponent
     attr::PlotAttributes
     x::Float64
@@ -2097,6 +2280,37 @@ function make(self::BoxLabel, context)
     valign = (offset > 0) ? "bottom" : "top"
     tp = TextPainter(pos, self.str; angle=angle*180./pi, valign=valign)
     GroupPainter(getattr(self,:style), tp)
+end
+
+type Stems <: LineComponent
+    attr::PlotAttributes
+    x
+    y
+
+    function Stems(x, y, args...; kvs...)
+        self = new(Dict())
+        iniattr(self)
+        kw_init(self, args...; kvs...)
+        self.x = x
+        self.y = y
+        self
+    end
+end
+
+function limits(self::Stems, window::BoundingBox)
+    return bounds_within(self.x, self.y, window) +
+           bounds_within(self.x, zeros(length(self.y)), window)
+end
+
+function make(self::Stems, context::PlotContext)
+    gp = GroupPainter(getattr(self,:style))
+    n = min(length(self.x),length(self.y))
+    for i = 1:n
+        a = project(context.geom, Point(self.x[i],self.y[i]))
+        b = project(context.geom, Point(self.x[i],0.))
+        push!(gp, LinePainter(a,b))
+    end
+    gp
 end
 
 # LabelComponent --------------------------------------------------------------
@@ -2545,19 +2759,99 @@ writemime(io::IO, ::MIME"image/png", p::PlotContainer) =
 output_surface = Winston.config_value("default","output_surface")
 output_surface = symbol(lowercase(get(ENV, "WINSTON_OUTPUT", output_surface)))
 
-type WinstonDisplay <: Display end
+type Figure
+    window
+    plot::PlotContainer
+end
+
+type WinstonDisplay <: Display
+    figs::Dict{Int,Figure}
+    fig_order::Vector{Int}
+    current_fig::Int
+    next_fig::Int
+    WinstonDisplay() = new(Dict{Int,Figure}(), Int[], 0, 1)
+end
+
+function addfig(d::WinstonDisplay, i::Int, fig::Figure)
+    @assert !haskey(d.figs,i)
+    d.figs[i] = fig
+    push!(d.fig_order, i)
+    while haskey(d.figs,d.next_fig)
+        d.next_fig += 1
+    end
+    d.current_fig = i
+end
+
+hasfig(d::WinstonDisplay, i::Int) = haskey(d.figs,i)
+
+function switchfig(d::WinstonDisplay, i::Int)
+    haskey(d.figs,i) && (d.current_fig = i)
+end
+
+function getfig(d::WinstonDisplay, i::Int)
+    haskey(d.figs,i) ? d.figs[i] : error("no figure with index $i")
+end
+
+function curfig(d::WinstonDisplay)
+    d.figs[d.current_fig]
+end
+
+nextfig(d::WinstonDisplay) = d.next_fig
+
+function dropfig(d::WinstonDisplay, i::Int)
+    haskey(d.figs,i) || return
+    delete!(d.figs, i)
+    splice!(d.fig_order, findfirst(d.fig_order,i))
+    d.next_fig = min(d.next_fig, i)
+    d.current_fig = isempty(d.fig_order) ? 0 : d.fig_order[end]
+end
+
+_display = WinstonDisplay()
+_pwinston = FramedPlot()
+
+function figure(;name::String="Figure $(nextfig(_display))",
+                 width::Integer=Winston.config_value("window","width"),
+                 height::Integer=Winston.config_value("window","height"))
+    i = nextfig(_display)
+    w = window(name, width, height, (x...)->dropfig(_display,i))
+    global _pwinston = FramedPlot()
+    addfig(_display, i, Figure(w,_pwinston))
+end
+
+function figure(i::Integer)
+    switchfig(_display, i)
+    fig = curfig(_display)
+    global _pwinston = fig.plot
+    display(_display, fig)
+    nothing
+end
+
+gcf() = _display.current_fig
+closefig() = closefig(_display.current_fig)
 
 if !isdefined(Main, :IJulia)
     if output_surface == :gtk
         include("gtk.jl")
-        display(::WinstonDisplay, p::PlotContainer) = gtk(p)
+        window = gtkwindow
+        closefig(i::Integer) = error("not implemented")
     elseif output_surface == :tk
         include("tk.jl")
-        display(::WinstonDisplay, p::PlotContainer) = tk(p)
+        window = tkwindow
+        closefig(i::Integer) = tkdestroy(getfig(_display,i).window)
     else
         assert(false)
     end
-    pushdisplay(WinstonDisplay())
+    display(d::WinstonDisplay, f::Figure) = display(f.window, f.plot)
+    function display(d::WinstonDisplay, p::PlotContainer)
+        isempty(d.figs) && figure()
+        f = curfig(d)
+        f.plot = p
+        display(d, f)
+    end
+    pushdisplay(_display)
+    if VERSION >= v"0.3-"
+        display(::Base.REPL.REPLDisplay, ::MIME"text/plain", p::PlotContainer) = display(p)
+    end
 end
 
 end # module

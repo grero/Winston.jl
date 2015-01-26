@@ -1,27 +1,3 @@
-export colormap,
-       errorbar,
-       file,
-       fplot,
-       hold,
-       imagesc,
-       loglog,
-       oplot,
-       plot,
-       plothist,
-       plothist2d,
-       savefig,
-       scatter,
-       semilogx,
-       semilogy,
-       spy,
-       text,
-       title,
-       xlabel,
-       xlim,
-       ylabel,
-       ylim
-
-_pwinston = FramedPlot()
 
 _hold = false
 hold() = (global _hold = !_hold)
@@ -138,9 +114,25 @@ function plot(p::FramedPlot, args::PlotArg...; kvs...)
     components = {}
     color_idx = 0
 
+    default_style = Dict()
+    attr = {}
+    for (k,v) in kvs
+        if k in (:linestyle, :linetype)
+            default_style[:linekind] = v
+        elseif k in (:marker, :symboltype)
+            default_style[:symbolkind] = v
+        elseif k in (:markersize,)
+            default_style[:symbolsize] = v
+        elseif k in (:color, :linekind, :linewidth, :symbolkind, :symbolsize)
+            default_style[k] = v
+        else
+            push!(attr, (k,v))
+        end
+    end
+
     i = 1
     while length(args) > 0
-        local x, y, ys, sopts
+        local x, y, ys
 
         if length(args) == 1 || typeof(args[2]) <: String
             elt = eltype(args[1])
@@ -164,10 +156,9 @@ function plot(p::FramedPlot, args::PlotArg...; kvs...)
             i += 1
         end
 
+        sopts = copy(default_style)
         if length(args) > 0 && typeof(args[1]) <: String
-            sopts = _parse_spec(shift!(args))
-        else
-            sopts = {:linekind => "solid"}
+            merge!(sopts, _parse_spec(shift!(args)))
         end
         no_color = !haskey(sopts, :color)
         add_curve = haskey(sopts, :linekind) || !haskey(sopts, :symbolkind)
@@ -196,14 +187,8 @@ function plot(p::FramedPlot, args::PlotArg...; kvs...)
         end
     end
 
-    for (k,v) in kvs
-        if k in [:linekind,:symbolkind,:color,:linecolor,:linewidth,:symbolsize]
-            for c in components
-                style(c, k, v)
-            end
-        else
-            setattr(p, k, v)
-        end
+    for (k,v) in attr
+        setattr(p, k, v)
     end
 
     for c in components
@@ -307,6 +292,7 @@ function spy(S::SparseMatrixCSC, nrS::Integer, ncS::Integer)
 end
 
 scatter(x::AbstractVecOrMat, y::AbstractVecOrMat, spec::ASCIIString="o"; kvs...) = scatter(x, y, 1., spec; kvs...)
+scatter{C<:Complex}(z::AbstractVecOrMat{C}, spec::ASCIIString="o"; kvs...) = scatter(real(z), imag(z), 1., spec; kvs...)
 function scatter(x::AbstractVecOrMat, y::AbstractVecOrMat,
                  s::Real, spec::ASCIIString="o"; kvs...)
     sopts = _parse_spec(spec)
@@ -352,6 +338,20 @@ function scatter(x::AbstractVecOrMat, y::AbstractVecOrMat,
     ghf(p)
 end
 
+## stem ##
+
+stem(y::AbstractVecOrMat, spec::ASCIIString="o"; kvs...) = stem(1:length(y), y, spec; kvs...)
+function stem(x::AbstractVecOrMat, y::AbstractVecOrMat, spec::ASCIIString="o"; kvs...)
+    p = ghf()
+    sopts = _parse_spec(spec)
+    s = Stems(x, y, sopts)
+    haskey(sopts,:symbolkind) || (sopts[:symbolkind] = "circle")
+    o = Points(x, y, sopts)
+    _process_keywords(kvs, p, s, o)
+    add(p, s, o)
+    ghf(p)
+end
+
 function text(x::Real, y::Real, s::String; kvs...)
     p = _pwinston
     c = DataLabel(x, y, s, halign="left")
@@ -380,6 +380,47 @@ function plothist(p::FramedPlot, h::(Range,Vector); kvs...)
 end
 plothist(p::FramedPlot, args...; kvs...) = plothist(p::FramedPlot, hist(args...); kvs...)
 plothist(args...; kvs...) = plothist(ghf(), args...; kvs...)
+
+quartileboxes(args...; kvs...) = quartileboxes(ghf(), args...; kvs...)
+
+function quartileboxes(p::FramedPlot, h::Matrix;kvs...)
+    for i=1:size(h,2)
+        b = QuartileBoxes(h[:,i];kvs...)
+        b.position = 1.1*b.width*i
+        quartileboxes(p,b;kvs...)
+    end
+    p
+end
+
+function quartileboxes(p::FramedPlot, h::Vector;kvs...)
+    b = QuartileBoxes(h;kvs...)
+    quartileboxes(p,b;kvs...)
+end
+
+function quartileboxes(p::FramedPlot, h::(Float64,(Float64,Float64),Vector);kvs...)
+    b = QuartileBoxes(h...;kvs...)
+    quartileboxes(p,b;kvs...)
+end
+
+function quartileboxes(p::FramedPlot, b::QuartileBoxes;kvs...)
+    #messy...
+    dd = args2dict(kvs...)
+    if :position in keys(dd)
+        setattr(b,:position, dd[:position])
+        b.position = dd[:position]
+    end
+    add(p,b)
+    for (k,v) in kvs
+        if k in [:color,:linecolor,:linekind,:linetype,:linewidth]
+            style(b, k, v)
+        else
+            setattr(p, k, v)
+        end
+    end
+
+    global _pwinston = p
+    p
+end
 
 # 3x3 gaussian
 #_default_kernel2d=[.05 .1 .05; .1 .4 .1; .05 .1 .05]
