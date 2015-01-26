@@ -8,6 +8,7 @@ else
     importall Graphics
 end
 using IniFile
+<<<<<<< b2a2cc9982b18f138ceaf77ea4b2853382d66b0f
 <<<<<<< 2330bb53d2787fc2144b04a3cceabf44f493e841
 using Compat
 using Dates
@@ -2651,6 +2652,7 @@ function make(self::FillBetween, context)
     GroupPainter(getattr(self,:style), PolygonPainter(coords))
 end
 
+<<<<<<< b2a2cc9982b18f138ceaf77ea4b2853382d66b0f
 <<<<<<< 43fd31e9a60e5caed207808e0a6b014b4e6e9671
 type RectangularPatch <: FillComponent
     attr::PlotAttributes
@@ -2669,6 +2671,76 @@ type RectangularPatch <: FillComponent
 		self.y = y
 		self
 	end
+end
+
+function limits(self::RectangularPatch, window::BoundingBox)
+	return bounds_within([self.x,self.x, self.x+self.width, self.x+self.width], [self.y, self.y+self.height, self.y+self.height,self.y], window)
+=======
+type Bars <: FillComponent
+    attr::PlotAttributes
+    edges::AbstractVector
+    heights::AbstractVector
+    widths::AbstractVector
+    function Bars(edges, heights, widths, args...;kvs...)
+        self = new(Dict())
+        iniattr(self)
+        kw_init(self, args...;kvs...)
+        self.edges = edges
+        self.heights = heights
+        self.widths = widths
+        self
+    end
+end
+
+
+function make(self::Bars, context::PlotContext)
+	nvals = length(self.heights)
+	x = Float64[]
+	y = Float64[]
+	G = GroupPainter(getattr(self,:style))
+	for i=1:nvals
+		yi  = self.heights[i]
+		push!(x, self.edges[i])
+		push!(x, self.edges[i])
+		push!(x, self.edges[i] + self.widths[i])
+		push!(x, self.edges[i] + self.widths[i])
+		push!(y,0.0)
+		push!(y,yi)
+		push!(y,yi)
+		push!(y,0.0)
+		coords = map((a,b) -> project(context.geom,Point(a,b)), x, y)
+		push!(G, PolygonPainter(coords))
+	end
+	G
+>>>>>>> Added RectangularPatch component
+end
+
+function make(self::RectangularPatch, context::PlotContext)
+	p1 = project(context.geom, self.x, self.y)	
+	p2 = project(context.geom, self.x, self.y + self.height)	
+	p3 = project(context.geom, self.x + self.width, self.y+self.height)	
+	p4 = project(context.geom, self.x + self.width, self.y)	
+	coords = map(p->Point(p...),[p1,p2,p3,p4])
+	GroupPainter(getattr(self,:style), PolygonPainter(coords))
+end
+
+type RectangularPatch <: FillComponent
+    attr::PlotAttributes
+    width::Float64
+    height::Float64
+    x::Float64
+    y::Float64
+
+    function RectangularPatch(x,y,width,height,args...;kvs...)
+        self = new(Dict())
+        iniattr(self)
+        kw_init(self, args...; kvs...)
+        self.width = width
+        self.height = height
+        self.x = x
+        self.y = y
+        self
+    end
 end
 
 function limits(self::RectangularPatch, window::BoundingBox)
