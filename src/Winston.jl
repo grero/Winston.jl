@@ -20,6 +20,7 @@ export
     plothist,
     plothist2d,
     quartileboxes,
+	rectangularpatch,
     savefig,
     scatter,
     semilogx,
@@ -40,6 +41,7 @@ export
     Table,
     
     QuartileBoxes,
+	RectangularPatch,
     Curve,
     FillAbove,
     FillBelow,
@@ -2506,6 +2508,38 @@ function make(self::FillBetween, context)
     y = [self.y1, reverse(self.y2)]
     coords = map((a,b) -> project(context.geom,Point(a,b)), x, y)
     GroupPainter(getattr(self,:style), PolygonPainter(coords))
+end
+
+type RectangularPatch <: FillComponent
+    attr::PlotAttributes
+	width::Float64	
+	height::Float64
+	x::Float64
+	y::Float64
+
+	function RectangularPatch(x,y,width,height,args...;kvs...)
+        self = new(Dict())
+        iniattr(self)
+        kw_init(self, args...; kvs...)
+		self.width = width
+		self.height = height
+		self.x = x
+		self.y = y
+		self
+	end
+end
+
+function limits(self::RectangularPatch, window::BoundingBox)
+	return bounds_within([self.x,self.x, self.x+self.width, self.x+self.width], [self.y, self.y+self.height, self.y+self.height,self.y], window)
+end
+
+function make(self::RectangularPatch, context::PlotContext)
+	p1 = project(context.geom, self.x, self.y)	
+	p2 = project(context.geom, self.x, self.y + self.height)	
+	p3 = project(context.geom, self.x + self.width, self.y+self.height)	
+	p4 = project(context.geom, self.x + self.width, self.y)	
+	coords = map(p->Point(p...),[p1,p2,p3,p4])
+	GroupPainter(getattr(self,:style), PolygonPainter(coords))
 end
 
 # ImageComponent -------------------------------------------------------------
