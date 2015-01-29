@@ -54,6 +54,7 @@ export
     Table,
     QuartileBoxes,
 	RectangularPatch,
+    RectangularBorder,
     Curve,
     FillAbove,
     FillBelow,
@@ -93,16 +94,6 @@ import Base: copy,
     setindex!,
     show,
     writemime
-
-export get_context, device_to_data, data_to_device
-
-if VERSION < v"0.3-"
-    typealias AbstractVecOrMat{T} Union(AbstractVector{T}, AbstractMatrix{T})
-    extrema(x) = (minimum(x),maximum(x))
-    Base.push!(x, a, b) = (push!(x, a); push!(x, b))
-elseif VERSION < v"0.4-"
-    macro Dict(pairs...)
-        Expr(:dict, pairs...)
     end
 else
     macro Dict(pairs...)
@@ -2326,6 +2317,42 @@ function make(self::LineY, context::PlotContext)
     a = project(context.geom, Point(xr[1], self.y))
     b = project(context.geom, Point(xr[2], self.y))
     GroupPainter(getattr(self,:style), LinePainter(a, b))
+end
+
+type RectangularBorder <: LineComponent
+	attr::PlotAttributes
+	width::Float64
+	height::Float64
+	x::Float64
+	y::Float64
+
+	function RectangularBorder(x,y,width, height, args...;kvs...)
+		self = new(Dict())
+		iniattr(self)
+		kw_init(self, args...; kvs...)
+		self.width = width
+		self.height = height
+		self.x = x
+		self.y = y
+		self
+	end
+end
+function limits(self::RectangularBorder, window::BoundingBox)
+	return bounds_within([self.x,self.x, self.x+self.width, self.x+self.width], [self.y, self.y+self.height, self.y+self.height,self.y], window)
+end
+
+function make(self::RectangularBorder, context::PlotContext)
+	p1 = project(context.geom, self.x, self.y)	
+	p2 = project(context.geom, self.x, self.y + self.height)	
+	p3 = project(context.geom, self.x + self.width, self.y+self.height)	
+	p4 = project(context.geom, self.x + self.width, self.y)	
+	objs = GroupPainter(getattr(self,:style))
+	coords = map(p->Point(p...),[p1,p2,p3,p4])
+	push!(objs, LinePainter(coords[1],coords[2]))
+	push!(objs, LinePainter(coords[2],coords[3]))
+	push!(objs, LinePainter(coords[3],coords[4]))
+	push!(objs, LinePainter(coords[4],coords[1]))
+	objs
 end
 
 type BoxLabel <: PlotComponent
