@@ -47,7 +47,7 @@ export
     FillAbove,
     FillBelow,
     FillBetween,
-    FilledBar,
+    FramedBar,
     Histogram,
     Image,
     Legend,
@@ -2691,14 +2691,14 @@ end
 
 _kw_rename(::FramedComponent) = @Dict(:color => :fillcolor)
 
-# FilledBar ------------------------------------------------------------------
+# FramedBar ------------------------------------------------------------------
 
-type FilledBar <: FramedComponent
+type FramedBar <: FramedComponent
     attr::PlotAttributes
     g::AbstractVector
     h::AbstractVecOrMat
 
-    function FilledBar(g, h, args...; kvs...)
+    function FramedBar(g, h, args...; kvs...)
         self = new(Dict())
         iniattr(self)
         kw_init(self, args...; kvs...)
@@ -2708,12 +2708,12 @@ type FilledBar <: FramedComponent
     end
 end
 
-_kw_rename(::FilledBar) = @Dict(
+_kw_rename(::FramedBar) = @Dict(
     :color => :fillcolor,
     :width => :barwidth,
 )
 
-function limits(self::FilledBar, window::BoundingBox)
+function limits(self::FramedBar, window::BoundingBox)
     x = [1, length(self.g)] + 
         getattr(self, "barwidth") * [-.5, .5] +
         getattr(self, "offset")
@@ -2722,7 +2722,7 @@ function limits(self::FilledBar, window::BoundingBox)
     bounds_within(x, y, window)
 end
 
-function make(self::FilledBar, context)
+function make(self::FramedBar, context)
     style = getattr(self, :style)
     objs = GroupPainter(style)
     baseline = getattr(self, "baseline")
