@@ -8,8 +8,6 @@ else
     importall Graphics
 end
 using IniFile
-<<<<<<< b2a2cc9982b18f138ceaf77ea4b2853382d66b0f
-<<<<<<< 2330bb53d2787fc2144b04a3cceabf44f493e841
 using Compat
 using Dates
 
@@ -2754,6 +2752,47 @@ function make(self::RectangularPatch, context::PlotContext)
 	p4 = project(context.geom, self.x + self.width, self.y)	
 	coords = map(p->Point(p...),[p1,p2,p3,p4])
 	GroupPainter(getattr(self,:style), PolygonPainter(coords))
+end
+
+type Bars <: FillComponent
+	attr::PlotAttributes
+	edges::AbstractVector
+	heights::AbstractVector
+	widths::AbstractVector
+	function Bars(edges, heights, widths, args...;kvs...)
+		self = new(Dict())
+		iniattr(self)
+		kw_init(self, args...;kvs...)
+		self.edges = edges
+		self.heights = heights
+		self.widths = widths
+		self
+	end
+end
+
+function make(self::Bars, context::PlotContext)
+	nvals = length(self.heights)
+	x = Float64[]
+	y = Float64[]
+	G = GroupPainter(getattr(self,:style))
+	for i=1:nvals
+		yi  = self.heights[i]
+		push!(x, self.edges[i])
+		push!(x, self.edges[i])
+		push!(x, self.edges[i] + self.widths[i])
+		push!(x, self.edges[i] + self.widths[i])
+		push!(y,0.0)
+		push!(y,yi)
+		push!(y,yi)
+		push!(y,0.0)
+		coords = map((a,b) -> project(context.geom,Point(a,b)), x, y)
+		push!(G, PolygonPainter(coords))
+	end
+	G
+end
+
+function limits(self::Bars,window::BoundingBox)
+	return bounds_within(self.edges, self.heights,window) + bounds_within(self.edges + self.widths, self.heights, window)
 end
 
 # ImageComponent -------------------------------------------------------------
