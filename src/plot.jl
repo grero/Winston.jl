@@ -533,7 +533,7 @@ function quartileboxes(p::FramedPlot, b::QuartileBoxes;kvs...)
     p
 end
 
-function bar(p::FramedPlot, edges::Vector, heights::Vector, widths;kvs...)
+function bar(p::FramedPlot, edges::Vector, heights::Vector, widths::Vector;kvs...)
 	b = Bars(edges,heights,widths)
 	add(p,b)
     for (k,v) in kvs
@@ -546,8 +546,8 @@ function bar(p::FramedPlot, edges::Vector, heights::Vector, widths;kvs...)
     global _pwinston = p
 	p
 end
-bar(edges::Vector, heights::Vector;kvs...) = bar(edges, heights, 0.8*minimum(diff(edges));kvs...)
-bar(edges::Vector, heights::Vector, args...;kvs...) = bar(ghf(), edges, heights, args...;kvs...)
+bar(edges::Vector, heights::Vector;kvs...) = bar(edges, heights, 0.8*ones(length(edges));kvs...)
+bar(edges::Vector, heights::Vector, widths::Vector;kvs...) = bar(ghf(), edges, heights, widths;kvs...)
 
 
 # 3x3 gaussian
