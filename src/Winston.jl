@@ -824,11 +824,12 @@ function _make_ticklabels(self::HalfAxis, context, pos, labels)
     style = (Symbol=>Any)[]
     style[:texthalign] = halign
     style[:textvalign] = valign
+	style[:textangle] = 0.0
     for (k,v) in getattr(self, :ticklabels_style)
         style[k] = v
     end
 
-    l = LabelsPainter(labelpos, labels; halign=style[:texthalign], valign=style[:textvalign])
+    l = LabelsPainter(labelpos, labels; halign=style[:texthalign], valign=style[:textvalign],angle=style[:textangle])
     GroupPainter(style, l)
 end
 
