@@ -422,7 +422,7 @@ function quartileboxes(p::FramedPlot, b::QuartileBoxes;kvs...)
     p
 end
 
-function bar(p::FramedPlot, edges::Vector, heights::Vector, widths::Vector;kvs...)
+function bar(p::FramedPlot, edges::Vector, heights::Vector, widths;kvs...)
 	b = Bars(edges,heights,widths)
 	add(p,b)
     for (k,v) in kvs
