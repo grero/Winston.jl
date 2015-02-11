@@ -2793,7 +2793,9 @@ type Bars <: FillComponent
 		kw_init(self, args...;kvs...)
 		self.edges = edges
 		self.heights = heights
-		self.widths = widths
+		if length(widths) == 1
+			self.widths = widths*ones(length(edges))
+		end
 		self
 	end
 end
