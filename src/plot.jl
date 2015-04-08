@@ -494,6 +494,15 @@ function quartileboxes(p::FramedPlot, h::Matrix;kvs...)
     p
 end
 
+function quartileboxes(p::FramedPlot, h::Vector...;kvs...)
+	for i in 1:length(h)
+        b = QuartileBoxes(h[i];kvs...)
+        b.position = 1.25*b.width*i
+        quartileboxes(p,b;kvs...)
+	end
+	p
+end
+
 function quartileboxes(p::FramedPlot, h::Vector;kvs...)
     b = QuartileBoxes(h;kvs...)
     quartileboxes(p,b;kvs...)
@@ -538,8 +547,8 @@ function bar(p::FramedPlot, edges::Vector, heights::Vector, widths;kvs...)
     global _pwinston = p
 	p
 end
-bar(edges::Vector, heights::Vector;kvs...) = bar(edges, heights, 0.8*ones(length(edges));kvs...)
-bar(edges::Vector, heights::Vector, widths::Vector;kvs...) = bar(ghf(), edges, heights, widths;kvs...)
+bar(edges::Vector, heights::Vector;kvs...) = bar(edges, heights, 0.8*minimum(diff(edges));kvs...)
+bar(edges::Vector, heights::Vector, args...;kvs...) = bar(ghf(), edges, heights, args...;kvs...)
 
 
 >>>>>>> Made bars accept scalar width arguments
