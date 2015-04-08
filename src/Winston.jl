@@ -2795,6 +2795,8 @@ type Bars <: FillComponent
 		self.heights = heights
 		if length(widths) == 1
 			self.widths = widths*ones(length(edges))
+		else
+			self.widths = widths
 		end
 		self
 	end
