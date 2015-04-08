@@ -2150,11 +2150,10 @@ end
         self.iqr = quartiles[2] - quartiles[1]
         self.outliers = filter(x-> (x<quartiles[1]-1.5*self.iqr)|(x>quartiles[2]+1.5*self.iqr),outliers)
         self.notch = get(args2dict(kvs...), :notch, false)
-        self.draw_outliers = get(args2dict(kvs...), :draw_outliers, true)
+        self.draw_outliers = draw_outliers
         self.width=0.8
         self.position = 1.0
         self.n = n 
-        self.draw_outliers = draw_outliers
         self
     end
 end
