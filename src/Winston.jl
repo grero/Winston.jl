@@ -2062,7 +2062,7 @@ type QuartileBoxes <: PlotComponent
         self.iqr = quartiles[2] - quartiles[1]
         self.outliers = filter(x-> (x<quartiles[1]-1.5*self.iqr)|(x>quartiles[2]+1.5*self.iqr),outliers)
         self.notch = get(args2dict(kvs...), :notch, false)
-        self.width=1.0
+        self.width=0.8
         self.position = 1.0
         self.n = n 
         self
@@ -2595,6 +2595,8 @@ type Bars <: FillComponent
 		self.heights = heights
 		if length(widths) == 1
 			self.widths = widths*ones(length(edges))
+		else
+			self.widths = widths
 		end
 		self
 	end
