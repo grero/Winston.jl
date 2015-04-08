@@ -481,7 +481,7 @@ function quartileboxes(p::FramedPlot, h::Matrix;kvs...)
 	positions = zeros(length(h))
     for i=1:size(h,2)
         b = QuartileBoxes(h[:,i];kvs...)
-        b.position = 1.1*b.width*i
+        b.position = 1.25*b.width*i #1.25*0.8 = 1.0
         quartileboxes(p,b;kvs...)
 		positions[i] = b.position
     end
