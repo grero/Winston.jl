@@ -1283,6 +1283,11 @@ type Table <: PlotContainer
     end
 end
 
+function getindex(self::Table, index::Int)
+	r,c = ind2sub((self.rows, self.cols), index)
+	return getindex(self, r,c)
+end
+
 function getindex(self::Table, row::Int, col::Int)
     return self.content[row,col]
 end
