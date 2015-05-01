@@ -2147,9 +2147,10 @@ end
 function QuartileBoxes(X::Vector;kvs...)
     #compute median and quartiles directly
     Xs = sort(X)
-    m = median(X)
-    l = quantile(X,0.25)
-    h = quantile(X,0.75)
+	_idx = isfinite(X)
+    m = median(X[_idx])
+    l = quantile(X[_idx],0.25)
+    h = quantile(X[_idx],0.75)
     iqr = h-l
 	_wu = X[(X.<h+1.5*iqr)&(X.>h)]
 	wu = !isempty(_wu) ? maximum(_wu) : NaN
