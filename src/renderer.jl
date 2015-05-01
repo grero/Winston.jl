@@ -126,6 +126,14 @@ function line(self::CairoRenderer, px, py, qx, qy)
     stroke(self.ctx)
 end
 
+function filled_box(self::CairoRenderer, px, py, qx, qy)
+	save(self.ctx)
+	new_path(self.ctx)
+	rectangle(self.ctx, px, py, qx-px, qy-py)
+	fill_preserve(self.ctx)
+	restore(self.ctx)
+end
+
 const symbol_funcs = {
     "asterisk" => (c, x, y, r) -> (
         move_to(c, x, y+r);
