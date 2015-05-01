@@ -77,6 +77,19 @@ function paint(self::LinePainter, context::PaintContext)
     line(context.device, self.p.x, self.p.y, self.q.x, self.q.y)
 end
 
+immutable BoxPainter <: AbstractPainter
+	p::Point
+	q::Point
+end
+
+function boundingbox(self::BoxPainter, context::PaintContext)
+    BoundingBox(self.p, self.q)
+end
+
+function paint(self::BoxPainter, context::PaintContext)
+    filled_box(context.device, self.p.x, self.p.y, self.q.x, self.q.y)
+end
+
 immutable LabelsPainter <: AbstractPainter
     points::Vector{Point}
     labels::Vector
