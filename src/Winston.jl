@@ -2278,6 +2278,13 @@ function make(self::QuartileBoxes, context::PlotContext)
     objs
 end
 
+function make_key(self::QuartileBoxes, bbox::BoundingBox)
+    y = center(bbox).y
+    p = Point(xmin(bbox), y)
+    q = Point(xmax(bbox), y)
+    GroupPainter(getattr(self,:style), LinePainter(p, q))
+end
+
 type LineX <: LineComponent
     attr::PlotAttributes
     x::Float64
