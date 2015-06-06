@@ -9,6 +9,7 @@ else
 end
 using IniFile
 using Compat
+using Dates
 
 export
 	bar,
@@ -36,6 +37,7 @@ export
     stem,
     text,
     title,
+    timeplot,
     xlabel,
     xlim,
     ylabel,
