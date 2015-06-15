@@ -2133,6 +2133,7 @@ end
     xmax::Float64
     outliers::AbstractVector
     notch::Bool
+    draw_outliers::Bool
     width::Float64
     n::Int64
     position::Float64
@@ -2168,15 +2169,11 @@ function QuartileBoxes(X::Vector;kvs...)
     l = quantile(X[_idx],0.25)
     h = quantile(X[_idx],0.75)
     iqr = h-l
-<<<<<<< d0044d10c78f7706fcc861b33d6727c787df3145
     _wu = X[(X.<h+1.5*iqr)&(X.>h)]
     wu = !isempty(_wu) ? maximum(_wu) : NaN
     _wl = X[(X.>l-1.5*iqr)&(X.<l)]
     wl = !isempty(_wl) ? minimum(_wl) : NaN
-    QuartileBoxes(m,(l,h),(wl,wu),X[(X.>wu)|(X.<wl)],length(X);kvs...)
-=======
-    QuartileBoxes(m,(l,h),X[(X.>h+1.5*iqr)|(X.<l-1.5*iqr)],length(X), minimum(X), maximum(X);kvs...)
->>>>>>> Fixed bug where the whiskers could exceed the range of the data in
+    QuartileBoxes(m,(l,h),(wl,wu),X[(X.>wu)|(X.<wl)],length(X);minimum(X), maximum(X);kvs...)
 end
 
 function limits(self::QuartileBoxes, window::BoundingBox)
@@ -2265,7 +2262,6 @@ function make(self::QuartileBoxes, context::PlotContext)
     #draw the whiskers
     xlm = xm - 0.25*self.width
     xrm = xm + 0.25*self.width
-<<<<<<< d0044d10c78f7706fcc861b33d6727c787df3145
     #lower whisker
     if isfinite(self.whiskers[1])
             p = project(context.geom, xm, self.quartiles[1])
@@ -2289,34 +2285,13 @@ function make(self::QuartileBoxes, context::PlotContext)
             l8 = LinePainter(Point(p[1],p[2]), Point(q[1],q[2]))
             push!(objs,l8)
     end
-=======
-    p = project(context.geom, xm, self.quartiles[1])
-    ll = max(self.xmin, self.quartiles[1] - 1.5*self.iqr)
-    uu = min(self.xmax, self.quartiles[2] + 1.5*self.iqr)
-    q = project(context.geom, xm, ll)
-    l5 = LinePainter(Point(p[1],p[2]), Point(q[1],q[2]))
-    push!(objs,l5)
-    p = project(context.geom, xlm, ll)
-    q = project(context.geom, xrm, ll)
-    l6 = LinePainter(Point(p[1],p[2]), Point(q[1],q[2]))
-    push!(objs,l6)
-
-    p = project(context.geom, xm, self.quartiles[2])
-    q = project(context.geom, xm, uu)
-    l7 = LinePainter(Point(p[1],p[2]), Point(q[1],q[2]))
-    push!(objs,l7)
-    p = project(context.geom, xlm, uu)
-    q = project(context.geom, xrm, uu)
-    l8 = LinePainter(Point(p[1],p[2]), Point(q[1],q[2]))
-    push!(objs,l8)
->>>>>>> Fixed bug where the whiskers could exceed the range of the data in
     #outliers
     if self.draw_outliers
         for o in self.outliers
             p = project(context.geom, xm, o)
             push!(objs, SymbolPainter(Point(p[1],p[2])))
         end
-    end
+		end
     objs
 end
 
