@@ -2121,6 +2121,7 @@ type QuartileBoxes <: PlotComponent
     xmax::Float64
     outliers::AbstractVector
     notch::Bool
+    draw_outliers::Bool
     width::Float64
     n::Int64
     position::Float64
@@ -2138,6 +2139,7 @@ type QuartileBoxes <: PlotComponent
         self.iqr = quartiles[2] - quartiles[1]
         self.outliers = filter(x-> (x<quartiles[1]-1.5*self.iqr)|(x>quartiles[2]+1.5*self.iqr),outliers)
         self.notch = get(args2dict(kvs...), :notch, false)
+        self.draw_outliers = get(args2dict(kvs...), :draw_outliers, true)
         self.width=0.8
         self.position = 1.0
         self.n = n 
@@ -2274,10 +2276,10 @@ function make(self::QuartileBoxes, context::PlotContext)
     end
     #outliers
     if self.draw_outliers
-            for o in self.outliers
-                    p = project(context.geom, xm, o)
-                    push!(objs, SymbolPainter(Point(p[1],p[2])))
-            end
+        for o in self.outliers
+            p = project(context.geom, xm, o)
+            push!(objs, SymbolPainter(Point(p[1],p[2])))
+        end
     end
     objs
 end
