@@ -2051,6 +2051,8 @@ type QuartileBoxes <: PlotComponent
     median::Float64
     quartiles::(Float64,Float64)
     iqr::Float64
+    xmin::Float64
+    xmax::Float64
     outliers::AbstractVector
     notch::Bool
     width::Float64
@@ -2058,7 +2060,7 @@ type QuartileBoxes <: PlotComponent
     position::Float64
 
 
-    function QuartileBoxes(median, quartiles, outliers, n,args...; kvs...)
+    function QuartileBoxes(median, quartiles, outliers, n, xmin=-Inf, xmax=Inf, args...; kvs...)
         self = new(Dict())
         iniattr(self)
         kw_init(self, args...; kvs...)
@@ -2070,6 +2072,8 @@ type QuartileBoxes <: PlotComponent
         self.width=0.8
         self.position = 1.0
         self.n = n 
+	self.xmin = xmin
+	self.xmax = xmax
         self
     end
 end
@@ -2082,7 +2086,7 @@ function QuartileBoxes(X::Vector;kvs...)
     l = quantile(X[_idx],0.25)
     h = quantile(X[_idx],0.75)
     iqr = h-l
-    QuartileBoxes(m,(l,h),X[(X.>h+1.5*iqr)|(X.<l-1.5*iqr)],length(X);kvs...)
+    QuartileBoxes(m,(l,h),X[(X.>h+1.5*iqr)|(X.<l-1.5*iqr)],length(X), minimum(X), maximum(X);kvs...)
 end
 
 function limits(self::QuartileBoxes, window::BoundingBox)
@@ -2172,20 +2176,22 @@ function make(self::QuartileBoxes, context::PlotContext)
     xlm = xm - 0.25*self.width
     xrm = xm + 0.25*self.width
     p = project(context.geom, xm, self.quartiles[1])
-    q = project(context.geom, xm, self.quartiles[1]-1.5*self.iqr)
+    ll = max(self.xmin, self.quartiles[1] - 1.5*self.iqr)
+    uu = min(self.xmax, self.quartiles[2] + 1.5*self.iqr)
+    q = project(context.geom, xm, ll)
     l5 = LinePainter(Point(p[1],p[2]), Point(q[1],q[2]))
     push!(objs,l5)
-    p = project(context.geom, xlm, self.quartiles[1]-1.5*self.iqr)
-    q = project(context.geom, xrm, self.quartiles[1]-1.5*self.iqr)
+    p = project(context.geom, xlm, ll)
+    q = project(context.geom, xrm, ll)
     l6 = LinePainter(Point(p[1],p[2]), Point(q[1],q[2]))
     push!(objs,l6)
 
     p = project(context.geom, xm, self.quartiles[2])
-    q = project(context.geom, xm, self.quartiles[2]+1.5*self.iqr)
+    q = project(context.geom, xm, uu)
     l7 = LinePainter(Point(p[1],p[2]), Point(q[1],q[2]))
     push!(objs,l7)
-    p = project(context.geom, xlm, self.quartiles[2]+1.5*self.iqr)
-    q = project(context.geom, xrm, self.quartiles[2]+1.5*self.iqr)
+    p = project(context.geom, xlm, uu)
+    q = project(context.geom, xrm, uu)
     l8 = LinePainter(Point(p[1],p[2]), Point(q[1],q[2]))
     push!(objs,l8)
     #outliers
