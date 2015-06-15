@@ -2117,6 +2117,8 @@ type QuartileBoxes <: PlotComponent
     median::Float64
     quartiles::(Float64,Float64)
     iqr::Float64
+    xmin::Float64
+    xmax::Float64
     outliers::AbstractVector
     notch::Bool
     width::Float64
@@ -2139,7 +2141,9 @@ type QuartileBoxes <: PlotComponent
         self.width=0.8
         self.position = 1.0
         self.n = n 
-		self.draw_outliers = draw_outliers
+        self.draw_outliers = draw_outliers
+	self.xmin = xmin
+	self.xmax = xmax
         self
     end
 end
@@ -2152,10 +2156,10 @@ function QuartileBoxes(X::Vector;kvs...)
     l = quantile(X[_idx],0.25)
     h = quantile(X[_idx],0.75)
     iqr = h-l
-	_wu = X[(X.<h+1.5*iqr)&(X.>h)]
-	wu = !isempty(_wu) ? maximum(_wu) : NaN
-	_wl = X[(X.>l-1.5*iqr)&(X.<l)]
-	wl = !isempty(_wl) ? minimum(_wl) : NaN
+    _wu = X[(X.<h+1.5*iqr)&(X.>h)]
+    wu = !isempty(_wu) ? maximum(_wu) : NaN
+    _wl = X[(X.>l-1.5*iqr)&(X.<l)]
+    wl = !isempty(_wl) ? minimum(_wl) : NaN
     QuartileBoxes(m,(l,h),(wl,wu),X[(X.>wu)|(X.<wl)],length(X);kvs...)
 end
 
@@ -2245,36 +2249,36 @@ function make(self::QuartileBoxes, context::PlotContext)
     #draw the whiskers
     xlm = xm - 0.25*self.width
     xrm = xm + 0.25*self.width
-	#lower whisker
-	if isfinite(self.whiskers[1])
-		p = project(context.geom, xm, self.quartiles[1])
-		q = project(context.geom, xm, self.whiskers[1])
-		l5 = LinePainter(Point(p[1],p[2]), Point(q[1],q[2]))
-		push!(objs,l5)
-		p = project(context.geom, xlm, self.whiskers[1])
-		q = project(context.geom, xrm, self.whiskers[1])
-		l6 = LinePainter(Point(p[1],p[2]), Point(q[1],q[2]))
-		push!(objs,l6)
-	end
+    #lower whisker
+    if isfinite(self.whiskers[1])
+            p = project(context.geom, xm, self.quartiles[1])
+            q = project(context.geom, xm, self.whiskers[1])
+            l5 = LinePainter(Point(p[1],p[2]), Point(q[1],q[2]))
+            push!(objs,l5)
+            p = project(context.geom, xlm, self.whiskers[1])
+            q = project(context.geom, xrm, self.whiskers[1])
+            l6 = LinePainter(Point(p[1],p[2]), Point(q[1],q[2]))
+            push!(objs,l6)
+    end
 
-	#upper whisker
-	if isfinite(self.whiskers[2])
-		p = project(context.geom, xm, self.quartiles[2])
-		q = project(context.geom, xm, self.whiskers[2])
-		l7 = LinePainter(Point(p[1],p[2]), Point(q[1],q[2]))
-		push!(objs,l7)
-		p = project(context.geom, xlm, self.whiskers[2])
-		q = project(context.geom, xrm, self.whiskers[2])
-		l8 = LinePainter(Point(p[1],p[2]), Point(q[1],q[2]))
-		push!(objs,l8)
-	end
+    #upper whisker
+    if isfinite(self.whiskers[2])
+            p = project(context.geom, xm, self.quartiles[2])
+            q = project(context.geom, xm, self.whiskers[2])
+            l7 = LinePainter(Point(p[1],p[2]), Point(q[1],q[2]))
+            push!(objs,l7)
+            p = project(context.geom, xlm, self.whiskers[2])
+            q = project(context.geom, xrm, self.whiskers[2])
+            l8 = LinePainter(Point(p[1],p[2]), Point(q[1],q[2]))
+            push!(objs,l8)
+    end
     #outliers
-	if self.draw_outliers
-		for o in self.outliers
-			p = project(context.geom, xm, o)
-			push!(objs, SymbolPainter(Point(p[1],p[2])))
-		end
-	end
+    if self.draw_outliers
+            for o in self.outliers
+                    p = project(context.geom, xm, o)
+                    push!(objs, SymbolPainter(Point(p[1],p[2])))
+            end
+    end
     objs
 end
 
