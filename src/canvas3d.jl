@@ -1,10 +1,14 @@
 module Plot3d
 
 import Winston.output_surface
+global backend
+
 if output_surface == :tk
     eval(Expr(:toplevel, Expr(:using, :Tk)))
+    backend = :Tk
 elseif output_surface == :gtk
     eval(Expr(:toplevel, Expr(:using, :Gtk)))
+    backend = :Gtk
 end
 using Colors
 using Graphics
@@ -192,6 +196,9 @@ function canvas3d_button1motion(this::Canvas3D, x, y)
     canvas3d_mouseupdate(this, x, y)
     draw(getgc(this.win), this, true)
     reveal(this.win)
+    if backend == :Tk
+	    Tk.update()
+    end
 end
 
 function canvas3d_button1release(this::Canvas3D, x, y)
