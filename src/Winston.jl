@@ -441,7 +441,7 @@ function _magform(x)
     if x == 0
         return 0., 0
     end
-    a, b = modf(log10(abs(x)))
+    a, b = modf(log(10,abs(x)))
     a, b = 10^a, @compat Int(b)
     if a < 1.
         a, b = a * 10, b - 1
@@ -525,8 +525,8 @@ function _ticks_default_linear(lim)
 end
 
 function _ticks_default_log(lim)
-    a = log10(lim[1])
-    b = log10(lim[2])
+    a = log(10,lim[1])
+    b = log(10,lim[2])
     r = range(a, b)
     nn = length(r)
 
@@ -540,7 +540,7 @@ function _ticks_default_log(lim)
 end
 
 _ticks_num_linear(lim, num) = linspace(lim[1], lim[2], num)
-_ticks_num_log(lim, num) = logspace(log10(lim[1]), log10(lim[2]), num)
+_ticks_num_log(lim, num) = logspace(log(10,lim[1]), log(10,lim[2]), num)
 
 function _subticks_linear(lim, ticks, num=nothing)
     major_div = abs(ticks[end] - ticks[1])/float(length(ticks) - 1)
@@ -558,8 +558,8 @@ function _subticks_linear(lim, ticks, num=nothing)
 end
 
 function _subticks_log(lim, ticks, num=nothing)
-    a = log10(lim[1])
-    b = log10(lim[2])
+    a = log(10,lim[1])
+    b = log(10,lim[2])
     r = range(a, b)
     nn = length(r)
 
@@ -1137,7 +1137,7 @@ end
 
 function margin_expand(margin::Real, a::Real, b::Real, islog::Bool)
     if islog
-        f = a == b ? 1.1 : 10.0^(0.5*margin*(log10(b) - log10(a)))
+        f = a == b ? 1.1 : 10.0^(0.5*margin*(log(10,b) - log(10,a)))
         return a/f, b*f
     else
         d = a == b ? 1. : 0.5*margin*(b - a)
