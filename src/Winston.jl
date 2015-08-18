@@ -2135,7 +2135,7 @@ type QuartileBoxes <: PlotComponent
         kw_init(self, args...; kvs...)
         self.median = median
         self.quartiles = quartiles
-		self.whiskers = whiskers
+        self.whiskers = whiskers
         self.iqr = quartiles[2] - quartiles[1]
         self.outliers = filter(x-> (x<quartiles[1]-1.5*self.iqr)|(x>quartiles[2]+1.5*self.iqr),outliers)
         self.notch = get(args2dict(kvs...), :notch, false)
@@ -2144,8 +2144,6 @@ type QuartileBoxes <: PlotComponent
         self.position = 1.0
         self.n = n 
         self.draw_outliers = draw_outliers
-	self.xmin = xmin
-	self.xmax = xmax
         self
     end
 end
@@ -2167,11 +2165,11 @@ end
 
 function limits(self::QuartileBoxes, window::BoundingBox)
     if !isempty(self.outliers) && self.draw_outliers
-        ymin = min(self.quartiles[1]-1.5*self.iqr,minimum(self.outliers))
-        ymax = max(self.quartiles[2]+1.5*self.iqr,maximum(self.outliers))
+        ymin = min(self.whiskers[1], minimum(self.outliers))
+        ymax = max(self.whiskers[2], maximum(self.outliers))
     else
-        ymin = self.quartiles[1]-1.5*self.iqr
-        ymax = self.quartiles[2]+1.5*self.iqr
+        ymin = self.whiskers[1]
+        ymax = self.whiskers[2]
     end
     xl = self.position - 1.0*self.width
     xr = self.position + 1.0*self.width
