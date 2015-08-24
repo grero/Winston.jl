@@ -78,7 +78,7 @@ function _parse_spec(spec::String)
     style = Dict()
 
     try
-        style[:color] = Colors.color(spec)
+        style[:color] = parse(Colors.Colorant, spec)
         return style
     end
 
