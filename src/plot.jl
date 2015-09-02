@@ -64,6 +64,7 @@ const chartokens = @Dict(
     'v' => (:symbolkind, "down-triangle"),
     '>' => (:symbolkind, "right-triangle"),
     '<' => (:symbolkind, "left-triangle"),
+    '|' => {:symbolkind => "vline",
     'y' => (:color, colorant"yellow"),
     'm' => (:color, colorant"magenta"),
     'c' => (:color, colorant"cyan"),

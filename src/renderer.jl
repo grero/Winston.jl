@@ -153,6 +153,10 @@ const symbol_funcs = @Dict(
         move_to(c, x+r, y-r);
         line_to(c, x-r, y+r)
     ),
+    "vline" => (c, x, y, r) -> (
+        move_to(c, x, y+r);
+        line_to(c, x, y-r);
+    ),
     "diamond" => (c, x, y, r) -> (
         move_to(c, x, y+r);
         line_to(c, x+r, y);
