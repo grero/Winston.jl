@@ -74,7 +74,7 @@ const chartokens = @Dict(
     'k' => (:color, "black"),
 )
 
-function _parse_spec(spec::String)
+function _parse_spec(spec::AbstractString)
     style = Dict()
 
     try
@@ -550,7 +550,6 @@ bar(edges::Vector, heights::Vector;kvs...) = bar(edges, heights, 0.8*minimum(dif
 bar(edges::Vector, heights::Vector, args...;kvs...) = bar(ghf(), edges, heights, args...;kvs...)
 
 
->>>>>>> Made bars accept scalar width arguments
 # 3x3 gaussian
 #_default_kernel2d=[.05 .1 .05; .1 .4 .1; .05 .1 .05]
 

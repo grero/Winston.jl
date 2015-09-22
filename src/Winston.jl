@@ -1889,13 +1889,8 @@ end
     write_to_surface(self, surface)
 end
 
-@compat function savepdf(self, filename::AbstractString, width::AbstractString, height::AbstractString)
+function savepdf(self, filename::AbstractString, width::AbstractString, height::AbstractString)
     savepdf(self, filename, _str_size_to_pts(width), _str_size_to_pts(height))
-end
-
-@compat function savepdf(self::PlotContainer, filename::AbstractString, width::Real, height::Real)
-    surface = CairoPDFSurface(filename, width, height)
-    write_to_surface(self, surface)
 end
 
 @compat function savepdf{T<:PlotContainer}(plots::Vector{T}, filename::AbstractString, width::Real, height::Real)
@@ -2137,7 +2132,6 @@ end
     n::Int64
     position::Float64
 	whiskers::Tuple{Float64,Float64}
-	draw_outliers::Bool
 
 
     function QuartileBoxes(median, quartiles, outliers, n, xmin=-Inf, xmax=Inf, args...; kvs...)
@@ -2172,7 +2166,7 @@ function QuartileBoxes(X::Vector;kvs...)
     wu = !isempty(_wu) ? maximum(_wu) : NaN
     _wl = X[(X.>l-1.5*iqr)&(X.<l)]
     wl = !isempty(_wl) ? minimum(_wl) : NaN
-    QuartileBoxes(m,(l,h),(wl,wu),X[(X.>wu)|(X.<wl)],length(X);minimum(X), maximum(X);kvs...)
+    QuartileBoxes(m,(l,h),(wl,wu),X[(X.>wu)|(X.<wl)],length(X);minimum(X), maximum(X),kvs...)
 end
 
 function limits(self::QuartileBoxes, window::BoundingBox)

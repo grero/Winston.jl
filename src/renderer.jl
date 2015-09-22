@@ -126,7 +126,6 @@ function line(self::CairoRenderer, px, py, qx, qy)
     stroke(self.ctx)
 end
 
-<<<<<<< d18459968c9b0ecda1201f81838095e9de45feb6
 function filled_box(self::CairoRenderer, px, py, qx, qy)
 	save(self.ctx)
 	new_path(self.ctx)
