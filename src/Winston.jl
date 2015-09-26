@@ -99,7 +99,7 @@ import Base: copy,
 export get_context, device_to_data, data_to_device
 
 if VERSION < v"0.3-"
-    typealias AbstractVecOrMat{T}(@compat Union{AbstractVector{T}, AbstractMatrix{T}})
+    typealias AbstractVecOrMat{T} (@compat Union{AbstractVector{T}, AbstractMatrix{T}})
     extrema(x) = (minimum(x),maximum(x))
     Base.push!(x, a, b) = (push!(x, a); push!(x, b))
 elseif VERSION < v"0.4-"
@@ -1903,7 +1903,7 @@ end
     finish(surface)
 end
 
-@compat function savepng(self::PlotContainer, io_or_filename::Union{IO,AbstractString}, width::Int, height::Int)
+function savepng(self::PlotContainer, io_or_filename::(@compat Union{IO,AbstractString}), width::Int, height::Int)
     surface = CairoRGBSurface(width, height)
     r = CairoRenderer(surface)
     set_source_rgb(r.ctx, 1.,1.,1.)
