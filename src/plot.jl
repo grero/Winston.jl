@@ -49,7 +49,7 @@ for (f,k) in ((:xlim,:xrange),(:ylim,:yrange))
     @eval $f() = $k(limits(_pwinston))
 end
 
-const chartokens = @Dict(
+const chartokens = Dict([
     '-' => (:linekind, "solid"),
     ':' => (:linekind, "dotted"),
     ';' => (:linekind, "dotdashed"),
@@ -64,7 +64,7 @@ const chartokens = @Dict(
     'v' => (:symbolkind, "down-triangle"),
     '>' => (:symbolkind, "right-triangle"),
     '<' => (:symbolkind, "left-triangle"),
-    '|' => {:symbolkind => "vline",
+    '|' => (:symbolkind,"vline"),
     'y' => (:color, colorant"yellow"),
     'm' => (:color, colorant"magenta"),
     'c' => (:color, colorant"cyan"),
@@ -73,7 +73,7 @@ const chartokens = @Dict(
     'b' => (:color, colorant"blue"),
     'w' => (:color, colorant"white"),
     'k' => (:color, colorant"black"),
-)
+])
 
 function _parse_spec(spec::String)
     style = Dict()
