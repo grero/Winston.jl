@@ -473,8 +473,8 @@ function quartileboxes{T<:Real}(p::FramedPlot, h::Array{T,1}...;kvs...)
 		positions[i] = b.position
 	end
 	setattr(p.x, "draw_subticks", false)
-	setattr(p.x, "ticks", positions)
-	setattr(p.x1, "ticklabels",map(string,[1:length(h)]))
+	#setattr(p.x, "ticks", positions)
+	#setattr(p.x1, "ticklabels",map(string,1:length(h)))
 	p
 end
 
