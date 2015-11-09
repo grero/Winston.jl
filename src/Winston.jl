@@ -2705,8 +2705,6 @@ function make(self::FillBetween, context)
     GroupPainter(getattr(self,:style), PolygonPainter(coords))
 end
 
-<<<<<<< b2a2cc9982b18f138ceaf77ea4b2853382d66b0f
-<<<<<<< 43fd31e9a60e5caed207808e0a6b014b4e6e9671
 type RectangularPatch <: FillComponent
     attr::PlotAttributes
 	width::Float64	
@@ -2728,44 +2726,6 @@ end
 
 function limits(self::RectangularPatch, window::BoundingBox)
 	return bounds_within([self.x,self.x, self.x+self.width, self.x+self.width], [self.y, self.y+self.height, self.y+self.height,self.y], window)
-=======
-type Bars <: FillComponent
-    attr::PlotAttributes
-    edges::AbstractVector
-    heights::AbstractVector
-    widths::AbstractVector
-    function Bars(edges, heights, widths, args...;kvs...)
-        self = new(Dict())
-        iniattr(self)
-        kw_init(self, args...;kvs...)
-        self.edges = edges
-        self.heights = heights
-        self.widths = widths
-        self
-    end
-end
-
-
-function make(self::Bars, context::PlotContext)
-	nvals = length(self.heights)
-	x = Float64[]
-	y = Float64[]
-	G = GroupPainter(getattr(self,:style))
-	for i=1:nvals
-		yi  = self.heights[i]
-		push!(x, self.edges[i])
-		push!(x, self.edges[i])
-		push!(x, self.edges[i] + self.widths[i])
-		push!(x, self.edges[i] + self.widths[i])
-		push!(y,0.0)
-		push!(y,yi)
-		push!(y,yi)
-		push!(y,0.0)
-		coords = map((a,b) -> project(context.geom,Point(a,b)), x, y)
-		push!(G, PolygonPainter(coords))
-	end
-	G
->>>>>>> Added RectangularPatch component
 end
 
 function make(self::RectangularPatch, context::PlotContext)
