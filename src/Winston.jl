@@ -95,6 +95,16 @@ import Base: copy,
     setindex!,
     show,
     writemime
+
+export get_context, device_to_data, data_to_device
+
+if VERSION < v"0.3-"
+    typealias AbstractVecOrMat{T}(@compat Union{AbstractVector{T}, AbstractMatrix{T}})
+    extrema(x) = (minimum(x),maximum(x))
+    Base.push!(x, a, b) = (push!(x, a); push!(x, b))
+elseif VERSION < v"0.4-"
+    macro Dict(pairs...)
+        Expr(:dict, pairs...)
     end
 else
     macro Dict(pairs...)
@@ -2113,20 +2123,19 @@ function make(self::Histogram, context::PlotContext)
     GroupPainter(getattr(self,:style), PathPainter(u, v))
 end
 
-type QuartileBoxes <: PlotComponent
+@compat type QuartileBoxes <: PlotComponent
     attr::PlotAttributes
     median::Float64
-    quartiles::(Float64,Float64)
+    quartiles::Tuple{Float64,Float64}
     iqr::Float64
     xmin::Float64
     xmax::Float64
     outliers::AbstractVector
     notch::Bool
-    draw_outliers::Bool
     width::Float64
     n::Int64
     position::Float64
-	whiskers::(Float64,Float64)
+	whiskers::Tuple{Float64,Float64}
 	draw_outliers::Bool
 
 

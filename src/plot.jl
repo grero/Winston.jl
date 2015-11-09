@@ -499,7 +499,7 @@ function quartileboxes(p::FramedPlot, h::Vector;kvs...)
 	setattr(p.x, "ticks", [b.position])
 end
 
-function quartileboxes(p::FramedPlot, h::(Float64,(Float64,Float64),Vector);kvs...)
+@compat function quartileboxes(p::FramedPlot, h::Tuple{Float64,Tuple{Float64,Float64},Vector};kvs...)
     b = QuartileBoxes(h...;kvs...)
     quartileboxes(p,b;kvs...)
 end
