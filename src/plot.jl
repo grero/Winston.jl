@@ -337,9 +337,11 @@ function imagesc{T<:Real}(p::PlotContainer,xrange::Interval, yrange::Interval, d
 end
 
 imagesc(p,xrange, yrange, data) = imagesc(p,xrange, yrange, data, (minimum(data),maximum(data)+1))
+imagesc(xrange, yrange, data) = imagesc(ghf(),xrange, yrange, data, (minimum(data),maximum(data)+1))
 imagesc(p,data) = ((h, w) = size(data); imagesc(p,(0,w), (0,h), data))
 imagesc(data) = ((h, w) = size(data); imagesc(ghf(),(0,w), (0,h), data))
 imagesc{T}(p,data::AbstractArray{T,2}, clims::Interval) = ((h, w) = size(data); imagesc(p,(0,w), (0,h), data, clims))
+imagesc{T}(data::AbstractArray{T,2}, clims::Interval) = ((h, w) = size(data); imagesc(ghf(),(0,w), (0,h), data, clims))
 
 function spy(S::SparseMatrixCSC, nrS::Integer, ncS::Integer)
     m, n = size(S)
