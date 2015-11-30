@@ -37,11 +37,11 @@ function ghf()
 end
 ghf(p) = (global _pwinston = p)
 
-savefig(fname::String, args...; kvs...) = savefig(_pwinston, fname, args...; kvs...)
+@compat savefig(fname::AbstractString, args...; kvs...) = savefig(_pwinston, fname, args...; kvs...)
 @deprecate file savefig
 
 for f in (:xlabel,:ylabel,:title)
-    @eval $f(s::String) = (setattr(_pwinston, $f=s); _pwinston)
+    @compat @eval $f(s::AbstractString) = (setattr(_pwinston, $f=s); _pwinston)
 end
 for (f,k) in ((:xlim,:xrange),(:ylim,:yrange))
     @eval $f(a, b) = (setattr(_pwinston, $k=(a,b)); _pwinston)
@@ -50,32 +50,32 @@ for (f,k) in ((:xlim,:xrange),(:ylim,:yrange))
 end
 
 const chartokens = Dict([
-    '-' => (:linekind, "solid"),
-    ':' => (:linekind, "dotted"),
-    ';' => (:linekind, "dotdashed"),
-    '+' => (:symbolkind, "plus"),
-    'o' => (:symbolkind, "circle"),
-    '*' => (:symbolkind, "asterisk"),
-    '.' => (:symbolkind, "dot"),
-    'x' => (:symbolkind, "cross"),
-    's' => (:symbolkind, "square"),
-    'd' => (:symbolkind, "diamond"),
-    '^' => (:symbolkind, "triangle"),
-    'v' => (:symbolkind, "down-triangle"),
-    '>' => (:symbolkind, "right-triangle"),
-    '<' => (:symbolkind, "left-triangle"),
-    '|' => (:symbolkind,"vline"),
-    'y' => (:color, colorant"yellow"),
-    'm' => (:color, colorant"magenta"),
-    'c' => (:color, colorant"cyan"),
-    'r' => (:color, colorant"red"),
-    'g' => (:color, colorant"green"),
-    'b' => (:color, colorant"blue"),
-    'w' => (:color, colorant"white"),
-    'k' => (:color, colorant"black"),
+    ('-',(:linekind, "solid")),
+    (':', (:linekind, "dotted")),
+    (';', (:linekind, "dotdashed")),
+    ('+', (:symbolkind, "plus")),
+    ('o', (:symbolkind, "circle")),
+    ('*', (:symbolkind, "asterisk")),
+    ('.', (:symbolkind, "dot")),
+    ('x', (:symbolkind, "cross")),
+    ('s', (:symbolkind, "square")),
+    ('d', (:symbolkind, "diamond")),
+    ('^', (:symbolkind, "triangle")),
+    ('v', (:symbolkind, "down-triangle")),
+    ('>', (:symbolkind, "right-triangle")),
+    ('<', (:symbolkind, "left-triangle")),
+    ('|', (:symbolkind,"vline")),
+    ('y', (:color, colorant"yellow")),
+    ('m', (:color, colorant"magenta")),
+    ('c', (:color, colorant"cyan")),
+    ('r', (:color, colorant"red")),
+    ('g', (:color, colorant"green")),
+    ('b', (:color, colorant"blue")),
+    ('w', (:color, colorant"white")),
+    ('k', (:color, colorant"black")),
 ])
 
-function _parse_spec(spec::String)
+@compat function _parse_spec(spec::AbstractString)
     style = Dict()
 
     try
@@ -131,7 +131,7 @@ function _process_keywords(kvs, p, components...)
     end
 end
 
-typealias PlotArg Union(String,AbstractVector,AbstractMatrix,Function,Real)
+@compat typealias PlotArg Union{AbstractString,AbstractVector,AbstractMatrix,Function,Real}
 
 isrowvec(x::AbstractArray) = ndims(x) == 2 && size(x,1) == 1 && size(x,2) > 1
 
@@ -196,7 +196,7 @@ function plot(p::FramedPlot, args::PlotArg...; kvs...)
             error("expected array or function for argument #$i; got $(typeof(a))")
         end
         spec = ""
-        if length(args) > 0 && isa(args[1], String)
+        @compat if length(args) > 0 && isa(args[1], AbstractString)
             spec = shift!(args); i += 1
         end
         push!(parsed_args, (x,y,spec))
@@ -276,8 +276,8 @@ loglog(args::PlotArg...; kvs...) = plot(args...; xlog=true, ylog=true, kvs...)
 
 typealias Interval @compat(Tuple{Real,Real})
 
-function data2rgb{T<:Real}(data::AbstractArray{T}, limits::Interval, colormap::Array{Uint32,1})
-    img = similar(data, Uint32)
+function data2rgb{T<:Real}(data::AbstractArray{T}, limits::Interval, colormap::Array{UInt32,1})
+    img = similar(data, UInt32)
     ncolors = length(colormap)
     limlower = limits[1]
     limscale = ncolors/(limits[2]-limits[1])
@@ -307,10 +307,10 @@ function jetrgb(x)
 end
 
 colormap() = (global _current_colormap; _current_colormap)
-colormap(c::Array{Uint32,1}) = (global _current_colormap = c; nothing)
+colormap(c::Array{UInt32,1}) = (global _current_colormap = c; nothing)
 colormap{C<:Color}(cs::Array{C,1}) =
-    colormap(Uint32[convert(RGB24,c) for c in cs])
-function colormap(name::String, n::Int=256)
+    colormap(UInt32[convert(RGB24,c) for c in cs])
+@compat function colormap(name::AbstractString, n::Int=256)
     if name == "jet"
         colormap([jetrgb(x) for x in linspace(0.,1.,n)])
     else
@@ -393,8 +393,8 @@ function scatter(x::AbstractVecOrMat, y::AbstractVecOrMat,
     c = convert(RGB24, color(get(_parse_spec(spec), :color, RGB(0,0,0))))
     scatter(x, y, s, fill(c,size(x)...), spec; kvs...)
 end
-function scatter(x::AbstractVecOrMat, y::AbstractVecOrMat,
-                 s::Union(Real,AbstractVecOrMat), c::AbstractVecOrMat,
+@compat function scatter(x::AbstractVecOrMat, y::AbstractVecOrMat,
+                 s::Union{Real,AbstractVecOrMat}, c::AbstractVecOrMat,
                  spec::ASCIIString="o"; kvs...)
     if typeof(s) <: Real
         s = fill(s, size(x)...)
@@ -432,7 +432,7 @@ function stem(x::AbstractVecOrMat, y::AbstractVecOrMat, spec::ASCIIString="o"; k
     ghf(p)
 end
 
-function text(x::Real, y::Real, s::String; kvs...)
+@compat function text(x::Real, y::Real, s::AbstractString; kvs...)
     p = _pwinston
     c = DataLabel(x, y, s, halign="left")
     _process_keywords(kvs, p, c)
@@ -534,7 +534,7 @@ _default_kernel2d=(1.0/273.)*[1.0 4.0 7.0 4.0 1.0;
                              4.0 16. 26. 16. 4.0]
 
 #hist2d
-function plothist2d(p::FramedPlot, h::@compat(Tuple{Union(Range,Vector),Union(Range,Vector),Array{Int,2}}); colormap=_current_colormap, smooth=0, kernel=_default_kernel2d, kvs...)
+function plothist2d(p::FramedPlot, h::@compat(Tuple{Union{Range,Vector},Union{Range,Vector},Array{Int,2}}); colormap=_current_colormap, smooth=0, kernel=_default_kernel2d, kvs...)
     xr, yr, hdata = h
 
     for i in 1:smooth
@@ -667,7 +667,7 @@ function fplot(f::Function, limits, args...; kvs...)
     pargs = []
     fopts = Dict()
     for arg in args
-        if typeof(arg) <: String
+        @compat if typeof(arg) <: AbstractString
             pargs = [arg]
         elseif typeof(arg) <: Integer
             fopts[:min_points] = arg

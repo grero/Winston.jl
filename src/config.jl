@@ -19,7 +19,7 @@ else
     split_keep_false(a, b) = split(a, b, keep=false)
 end
 
-function _atox(s::String)
+@compat function _atox(s::AbstractString)
     x = strip(s)
     if x == "nothing"
         return nothing
@@ -55,7 +55,7 @@ function config_value(section, option)
     _atox(strval)
 end
 
-function config_options(sec::String)
+@compat function config_options(sec::AbstractString)
     opts = Dict{Symbol,Any}()
     if sec == "defaults"
         for (k,v) in _winston_config.defaults

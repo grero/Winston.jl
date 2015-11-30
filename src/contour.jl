@@ -6,7 +6,7 @@ type Contourc
     contours
 end
 
-function contourc(f::Function, x, y; cs::Union(Nothing, Number)=nothing)
+@compat function contourc(f::Function, x, y; cs::Union{Nothing, Number}=nothing)
 
     fxy = [f(x,y) for x in x, y in y]
 
