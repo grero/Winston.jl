@@ -2701,6 +2701,31 @@ function make(self::FillBetween, context)
     GroupPainter(getattr(self,:style), PolygonPainter(coords))
 end
 
+type FillBetweenX <: FillComponent
+	attr::PlotAttributes
+	x1
+	x2
+	function FillBetweenX(x1, x2, args...; kvs...)
+        self = new(Dict())
+        iniattr(self)
+        kw_init(self, args...; kvs...)
+        self.x1 = x1
+        self.x2 = x2
+        self
+    end
+end
+
+limits(self::FillBetweenX, window::BoundingBox) = BoundingBox(self.x1, self.x2, NaN, NaN)
+
+function make(self::FillBetweenX, context)
+    yr = yrange(context.data_bbox)
+    p1 = project(context.geom, Point(self.x1, yr[1]))
+    p2 = project(context.geom, Point(self.x2, yr[1]))
+    p3 = project(context.geom, Point(self.x2, yr[2]))
+    p4 = project(context.geom, Point(self.x1, yr[2]))
+    GroupPainter(getattr(self,:style), PolygonPainter([p1,p2,p3,p4;]))
+end
+
 type RectangularPatch <: FillComponent
     attr::PlotAttributes
 	width::Float64	
