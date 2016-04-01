@@ -2139,7 +2139,7 @@ end
 	whiskers::Tuple{Float64,Float64}
 
 
-    function QuartileBoxes(median, quartiles, outliers, n, xmin=-Inf, xmax=Inf, args...; kvs...)
+    function QuartileBoxes(median, quartiles, whiskers, outliers, n, xmin=-Inf, xmax=Inf, args...; kvs...)
         self = new(Dict())
         iniattr(self)
         kw_init(self, args...; kvs...)
@@ -2171,7 +2171,7 @@ function QuartileBoxes(X::Vector;kvs...)
     wu = !isempty(_wu) ? maximum(_wu) : NaN
     _wl = X[(X.>l-1.5*iqr)&(X.<l)]
     wl = !isempty(_wl) ? minimum(_wl) : NaN
-    QuartileBoxes(m,(l,h),(wl,wu),X[(X.>wu)|(X.<wl)],length(X);minimum(X), maximum(X),kvs...)
+    QuartileBoxes(m,(l,h),(wl,wu),X[(X.>wu)|(X.<wl)],length(X),minimum(X), maximum(X);kvs...)
 end
 
 function limits(self::QuartileBoxes, window::BoundingBox)
