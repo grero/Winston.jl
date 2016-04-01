@@ -1889,6 +1889,11 @@ end
     write_to_surface(self, surface)
 end
 
+@compat function savepdf(self::PlotContainer, filename::AbstractString, width::Real, height::Real)
+    surface = CairoPDFSurface(filename, width, height)
+    write_to_surface(self, surface)
+end
+
 function savepdf(self, filename::AbstractString, width::AbstractString, height::AbstractString)
     savepdf(self, filename, _str_size_to_pts(width), _str_size_to_pts(height))
 end
